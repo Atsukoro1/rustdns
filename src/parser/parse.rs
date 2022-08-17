@@ -115,6 +115,9 @@ pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
         let name_parts = question.name.split(".")
             .collect::<Vec<&str>>();
 
+        let complete_length = question.name.len() + 6;
+        push_byte_vec(&mut bytes, complete_length as u8, 0x0);
+
         // First write the initial length byte and then the content
         for name in name_parts {
             let length: usize = name.len();

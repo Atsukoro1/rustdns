@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+lazy_static = "1.4.0"
 bitreader = "0.3.6"
 enum_primitive = "0.1.1"
 bit = "0.1.1"
