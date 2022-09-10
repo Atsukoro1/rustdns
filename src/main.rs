@@ -1,10 +1,10 @@
 use std::str;
 use std::thread;
 use std::net::UdpSocket;
+use std::net::TcpListener;
 
 fn main() {
-
-    let socket = match UdpSocket::bind("192.168.0.15:22") {
+    let socket = match UdpSocket::bind("192.168.0.15:53") {
         Ok(s) => s,
         Err(e) => panic!("couldn't bind socket: {}", e)
     };
