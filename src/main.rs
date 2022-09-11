@@ -1,7 +1,12 @@
-use std::str;
+use std::net::SocketAddr;
 use std::thread;
 use std::net::UdpSocket;
-use std::net::TcpListener;
+
+mod parse;
+
+fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
+    println!("{:?}", bytes);
+}
 
 fn main() {
     let socket = match UdpSocket::bind("192.168.0.15:53") {
@@ -9,14 +14,16 @@ fn main() {
         Err(e) => panic!("couldn't bind socket: {}", e)
     };
 
-    let mut buf = [0; 2048];
     loop {
+        let mut buf = [0; 520];
+
         match socket.recv_from(&mut buf) {
             Ok((amt, src)) => {
                 thread::spawn(move || {
-                    println!("amt: {}", amt);
-                    println!("src: {}", src);
-                    println!("{}", str::from_utf8(&buf).unwrap_or(""));
+                    handle_datagram(
+                        &buf[0..amt],
+                        src
+                    );
                 });
             },
             Err(e) => {
