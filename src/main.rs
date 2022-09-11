@@ -3,9 +3,11 @@ use std::thread;
 use std::net::UdpSocket;
 
 mod parse;
+mod helper;
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
-    println!("{:?}", bytes);
+    let header: parse::DNSHeader = parse::parse_datagram(bytes);
+    println!("{:?}", header);
 }
 
 fn main() {
