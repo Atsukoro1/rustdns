@@ -1,4 +1,5 @@
 use bitreader::BitReader;
+use enum_primitive::FromPrimitive;
 use crate::{
     helper::bit_assign,
     parser::def::{
@@ -10,6 +11,8 @@ use crate::{
         DNSQuestion
     }
 };
+
+use super::def::QuestionType;
 
 /// Parse raw bytes into DNS struct
 /// 
@@ -94,7 +97,7 @@ pub fn parse_datagram(bytes: &[u8]) -> DNS {
     for _ in 0..result.question_count {
         let mut question: DNSQuestion = DNSQuestion { 
             name: String::new(), 
-            qtype: 1,
+            qtype: QuestionType::A,
             class: 1 
         };
 
@@ -123,6 +126,9 @@ pub fn parse_datagram(bytes: &[u8]) -> DNS {
         }
 
         question.name = qname;
+        question.qtype = QuestionType::from_f32(
+            reader.read_u16(16).unwrap() as f32
+        ).unwrap();
 
         questions.push(question);
     }

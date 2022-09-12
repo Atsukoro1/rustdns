@@ -1,3 +1,5 @@
+#[macro_use] extern crate enum_primitive;
+
 use std::net::SocketAddr;
 use std::thread;
 use std::net::UdpSocket;
