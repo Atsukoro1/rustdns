@@ -72,7 +72,20 @@ pub struct DNSHeader {
 pub struct DNSQuestion {
     pub name: String,
     pub qtype: QuestionType,
-    pub class: u16
+    pub class: QuestionClass
+}
+
+enum_from_primitive! {
+    #[repr(u16)]
+    #[derive(Debug)]
+    /// DNS Question class
+    /// described at https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.4
+    pub enum QuestionClass {
+        IN = 1,
+        CS = 2,
+        CH = 3,
+        HS = 4
+    }
 }
 
 enum_from_primitive! {

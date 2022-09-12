@@ -12,7 +12,7 @@ use crate::{
     }
 };
 
-use super::def::QuestionType;
+use super::def::{QuestionType, QuestionClass};
 
 /// Parse raw bytes into DNS struct
 /// 
@@ -98,7 +98,7 @@ pub fn parse_datagram(bytes: &[u8]) -> DNS {
         let mut question: DNSQuestion = DNSQuestion { 
             name: String::new(), 
             qtype: QuestionType::A,
-            class: 1 
+            class: QuestionClass::CH
         };
 
         let mut qname: String = String::new();
@@ -126,8 +126,11 @@ pub fn parse_datagram(bytes: &[u8]) -> DNS {
         }
 
         question.name = qname;
-        question.qtype = QuestionType::from_f32(
-            reader.read_u16(16).unwrap() as f32
+        question.qtype = QuestionType::from_u16(
+            reader.read_u16(16).unwrap()
+        ).unwrap();
+        question.class = QuestionClass::from_u16(
+            reader.read_u16(16).unwrap()
         ).unwrap();
 
         questions.push(question);
