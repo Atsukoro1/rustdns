@@ -1,3 +1,5 @@
+use std::fs::read;
+
 use bitreader::BitReader;
 use super::helper::bit_assign;
 
@@ -86,7 +88,6 @@ pub fn parse_datagram(bytes: &[u8]) -> DNSHeader {
     };
 
     result.id = reader.read_u16(16).unwrap();
-    reader.skip(16).expect("Failed to skip bits");
 
     result.qr = bit_assign::<Type>(
         Type::Query, 
@@ -100,7 +101,6 @@ pub fn parse_datagram(bytes: &[u8]) -> DNSHeader {
         2 => OpCode::Status,
         _ => OpCode::FutureUse
     };
-    reader.skip(4).unwrap();
 
     result.authoritative = bit_assign::<bool>(
         false, 
@@ -126,7 +126,8 @@ pub fn parse_datagram(bytes: &[u8]) -> DNSHeader {
         &mut reader
     );
 
-    reader.skip(3).unwrap();
+    reader.skip(3);
+
 
     result.error_code = match reader.read_u8(4).unwrap() {
         0 => ErrorCode::NoError,
@@ -137,12 +138,16 @@ pub fn parse_datagram(bytes: &[u8]) -> DNSHeader {
         5 => ErrorCode::Refused,
         _ => ErrorCode::FutureUse
     };
-    reader.skip(4).unwrap();
 
     result.question_count = reader.read_u16(16).unwrap();
+
     result.answer_count = reader.read_u16(16).unwrap();
+
     result.nameserver_count = reader.read_u16(16).unwrap();
+    
     result.resource_count = reader.read_u16(16).unwrap();
+
+    println!("{}",reader.remaining());
 
     result
 }
