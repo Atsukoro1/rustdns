@@ -6,7 +6,7 @@ mod parse;
 mod helper;
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
-    let header: parse::DNSHeader = parse::parse_datagram(bytes);
+    let header: parse::DNS = parse::parse_datagram(bytes);
     println!("{:?}", header);
 }
 

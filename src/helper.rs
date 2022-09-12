@@ -10,12 +10,10 @@ pub fn bit_assign<'a, T: Any + Debug>(
 ) -> T {
     match reader.read_u8(1).unwrap() {
         0 => {
-            // reader.skip(1).unwrap();
             is_zero
         }, 
 
         1 => {
-            // reader.skip(1).unwrap();
             is_one
         },
 

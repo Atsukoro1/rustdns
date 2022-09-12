@@ -1,5 +1,3 @@
-use std::fs::read;
-
 use bitreader::BitReader;
 use super::helper::bit_assign;
 
@@ -63,13 +61,37 @@ pub struct DNSHeader {
     pub resource_count: u16
 }
 
+#[derive(Debug)]
+pub struct QuestionName {
+    /// Length of the domain name in bytes
+    length: u8,
+    /// Actual domain name
+    name: String,
+}
+
+/// DNS Question as described at https://datatracker.ietf.org/doc/html/rfc1035
+/// under the 4.1.2. Question section format section
+#[derive(Debug)]
+pub struct DNSQuestion {
+    questions: Vec<QuestionName>,
+    qtype: u16,
+    qclass: u16
+}
+
+/// DNS datagram as descibed at https://datatracker.ietf.org/doc/html/rfc1035
+/// under the 4.1. Format section
+#[derive(Debug)]
+pub struct DNS {
+    pub header: DNSHeader,
+}
+
 /// Parse raw bytes into DNS struct
 /// 
 /// As described at https://datatracker.ietf.org/doc/html/rfc1035 under
 /// the 4.1.1 Header section format
 /// 
 /// Returns DNS struct
-pub fn parse_datagram(bytes: &[u8]) -> DNSHeader {
+pub fn parse_datagram(bytes: &[u8]) -> DNS {
     println!("{}", bytes.len());
     let mut reader = BitReader::new(bytes);
     let mut result = DNSHeader {
@@ -126,7 +148,7 @@ pub fn parse_datagram(bytes: &[u8]) -> DNSHeader {
         &mut reader
     );
 
-    reader.skip(3);
+    reader.skip(3).unwrap();
 
 
     result.error_code = match reader.read_u8(4).unwrap() {
@@ -147,7 +169,7 @@ pub fn parse_datagram(bytes: &[u8]) -> DNSHeader {
     
     result.resource_count = reader.read_u16(16).unwrap();
 
-    println!("{}",reader.remaining());
-
-    result
+    DNS {
+        header: result,
+    }
 }
