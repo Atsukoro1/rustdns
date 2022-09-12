@@ -2,11 +2,11 @@ use std::net::SocketAddr;
 use std::thread;
 use std::net::UdpSocket;
 
-mod parse;
+mod parser;
 mod helper;
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
-    let header: parse::DNS = parse::parse_datagram(bytes);
+    let header: parser::def::DNS = parser::parse::parse_datagram(bytes);
     println!("{:?}", header);
 }
 
