@@ -6,20 +6,15 @@ use crate::{
         DNS,
         DNSHeader,
         OpCode,
+        QuestionClass,
+        QuestionType,
         Type,
         ErrorCode,
         DNSQuestion
     }
 };
 
-use super::def::{QuestionType, QuestionClass};
-
-/// Parse raw bytes into DNS struct
-/// 
-/// As described at https://datatracker.ietf.org/doc/html/rfc1035 under
-/// the 4.1.1 Header section format
-/// 
-/// Returns DNS struct containing header and question
+/// Create a DNS struct from raw bytes
 pub fn parse_datagram(bytes: &[u8]) -> DNS {
     let mut reader = BitReader::new(bytes);
     let mut result = DNSHeader {

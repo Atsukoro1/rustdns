@@ -1,4 +1,4 @@
-use enum_primitive::FromPrimitive;
+use crate::parser::parse::parse_datagram;
 
 #[derive(Debug)]
 pub enum Type {
@@ -187,4 +187,27 @@ enum_from_primitive! {
 pub struct DNS {
     pub header: DNSHeader,
     pub questions: Vec<DNSQuestion>
+}
+
+pub trait Construct {
+    /// Parse raw bytes into DNS struct
+    /// 
+    /// As described at https://datatracker.ietf.org/doc/html/rfc1035 under
+    /// the 4.1.1 Header section format
+    /// 
+    /// Returns DNS struct containing header and question
+    fn from(bytes: &[u8]) -> DNS;
+
+    /// fdfd
+    fn into(self) -> &'static [u8];
+}
+
+impl Construct for DNS {
+    fn from(bytes: &[u8]) -> DNS {
+        parse_datagram(bytes)
+    }
+
+    fn into(self) -> &'static [u8] {
+        &[4,4]
+    }
 }

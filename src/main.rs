@@ -8,8 +8,7 @@ mod parser;
 mod helper;
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
-    let header: parser::def::DNS = parser::parse::parse_datagram(bytes);
-    println!("{:?}", header);
+    let datagram: parser::def::DNS = <parser::def::DNS as parser::def::Construct>::from(bytes);
 }
 
 fn main() {
