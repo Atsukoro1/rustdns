@@ -1,5 +1,7 @@
 use crate::parser::parse::parse_datagram;
 
+use super::parse::datagram_bytes;
+
 #[derive(Debug)]
 pub enum Type {
     Response,
@@ -198,8 +200,8 @@ pub trait Construct {
     /// Returns DNS struct containing header and question
     fn from(bytes: &[u8]) -> DNS;
 
-    /// fdfd
-    fn into(self) -> &'static [u8];
+    /// Convert the struct into bytes
+    fn bytes(self) -> Box<[u16]>;
 }
 
 impl Construct for DNS {
@@ -207,7 +209,7 @@ impl Construct for DNS {
         parse_datagram(bytes)
     }
 
-    fn into(self) -> &'static [u8] {
-        &[4,4]
+    fn bytes(self) -> Box<[u16]> {
+        datagram_bytes(self)
     }
 }

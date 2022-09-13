@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 bitreader = "0.3.6"
 enum_primitive = "0.1.1"
+bitbit = "0.2.0"

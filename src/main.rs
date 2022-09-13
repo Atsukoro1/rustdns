@@ -3,16 +3,18 @@
 use std::net::SocketAddr;
 use std::thread;
 use std::net::UdpSocket;
+use crate::parser::def::Construct;
 
 mod parser;
 mod helper;
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
     let datagram: parser::def::DNS = <parser::def::DNS as parser::def::Construct>::from(bytes);
+    println!("{:?}", datagram.bytes());
 }
 
 fn main() {
-    let socket = match UdpSocket::bind("192.168.0.15:53") {
+    let socket = match UdpSocket::bind("127.0.0.1:53") {
         Ok(s) => s,
         Err(e) => panic!("couldn't bind socket: {}", e)
     };

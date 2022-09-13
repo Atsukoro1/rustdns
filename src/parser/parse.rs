@@ -1,4 +1,5 @@
 use bitreader::BitReader;
+use bitbit::BitWriter;
 use enum_primitive::FromPrimitive;
 use crate::{
     helper::bit_assign,
@@ -13,6 +14,20 @@ use crate::{
         DNSQuestion
     }
 };
+
+/// Convert DNS struct into raw bytes
+pub fn datagram_bytes(datagram: DNS) -> Box<[u16]> {
+    let mut result = [1u16; 520];
+
+    result[0] = datagram.header.id;
+
+    let mut option_bytes: u16 = 0b10000000_00000000;
+    option_bytes |= 0b001;
+    
+    println!("0b{:016b}", option_bytes);
+    
+    Box::from(result)
+}
 
 /// Create a DNS struct from raw bytes
 pub fn parse_datagram(bytes: &[u8]) -> DNS {
