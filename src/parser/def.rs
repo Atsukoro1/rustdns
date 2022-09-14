@@ -192,6 +192,9 @@ pub struct DNS {
 }
 
 pub trait Construct {
+    /// Create a new DNS struct with some default values
+    fn new() -> DNS;
+
     /// Parse raw bytes into DNS struct
     /// 
     /// As described at https://datatracker.ietf.org/doc/html/rfc1035 under
@@ -205,6 +208,26 @@ pub trait Construct {
 }
 
 impl Construct for DNS {
+    fn new() -> DNS {
+        DNS { 
+            header: DNSHeader { 
+                id: 0, 
+                qr: Type::Query, 
+                op_code: OpCode::FutureUse, 
+                authoritative: false, 
+                truncated: false, 
+                recursion_desired: false, 
+                recursion_available: false, 
+                error_code: ErrorCode::NoError, 
+                question_count: 0, 
+                answer_count: 0, 
+                nameserver_count: 0, 
+                resource_count: 0
+            }, 
+            questions: vec![]
+        }
+    }
+
     fn from(bytes: &[u8]) -> DNS {
         parse_datagram(bytes)
     }
