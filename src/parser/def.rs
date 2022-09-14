@@ -2,7 +2,7 @@ use crate::parser::parse::parse_datagram;
 
 use super::parse::datagram_bytes;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Type {
     Response,
     Query

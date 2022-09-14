@@ -1,7 +1,11 @@
+use bit::BitIndex;
 use enum_primitive::FromPrimitive;
 use bitreader::BitReader;
 use crate::{
-    helpers::bit_reader::bit_assign,
+    helpers::bit::{
+        convert_u16_to_two_u8s,
+        bit_assign
+    },
     parser::def::{
         DNS,
         DNSHeader,
@@ -15,8 +19,78 @@ use crate::{
 };
 
 /// Convert DNS struct into raw bytes
-pub fn datagram_bytes(_datagram: DNS) -> Box<[u8]> {
-    Box::from([1u8; 520])
+pub fn datagram_bytes(datagram: DNS) -> Box<[u8]> {
+    let mut bytes: [u8; 12] = [
+        0b0000_0000u8, 0b0000_0000u8,
+        0b0000_0000u8, 0b0000_0000u8,
+        0b0000_0000u8, 0b0000_0000u8,
+        0b0000_0000u8, 0b0000_0000u8,
+        0b0000_0000u8, 0b0000_0000u8,
+        0b0000_0000u8, 0b0000_0000u8
+    ];
+
+    // Identificator
+    let id_u8: [u8; 2] = convert_u16_to_two_u8s(datagram.header.id);
+    bytes[0].set_bit_range(0..7, id_u8[0]);
+    bytes[1].set_bit_range(0..7, id_u8[1]);
+
+    // Question or response
+    bytes[2].set_bit(
+        0, 
+        if datagram.header.qr == Type::Query {
+            false
+        } else {
+            true
+        },
+    );
+
+    // Opcode
+    let opc_bits: u8 = match datagram.header.op_code {
+        OpCode::Query => 0x1,
+        OpCode::IQuery => 0x2,
+        OpCode::Status => 0x3,
+        OpCode::FutureUse => 0x4
+    };
+    bytes[2].set_bit_range(1..4, opc_bits);
+
+    // Authoritative Answer
+    bytes[2].set_bit(
+        5, 
+        datagram.header.authoritative
+    );
+
+    // If the message was truncated
+    bytes[2].set_bit(
+        6, 
+        datagram.header.truncated
+    );
+
+    // If recursion will be used
+    bytes[2].set_bit(
+        7, 
+        datagram.header.recursion_desired
+    );
+
+    // If recursion is available
+    bytes[3].set_bit(
+        0, 
+        datagram.header.recursion_available
+    );
+
+    // Skipped 3 bits because of the section that will be used in future
+    let rcode_bits: u8 = match datagram.header.error_code {
+        ErrorCode::NoError => 0x0,
+        ErrorCode::FormatError => 0x1,
+        ErrorCode::ServerFailure => 0x2,
+        ErrorCode::NameError => 0x3,
+        ErrorCode::NotImplemented => 0x4,
+        ErrorCode::Refused => 0x5,
+        // Future use
+        _ => 0x0
+    };
+    bytes[3].set_bit_range(4..7, rcode_bits);
+
+    Box::from(bytes)
 }
 
 /// Create a DNS struct from raw bytes

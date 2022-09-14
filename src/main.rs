@@ -1,5 +1,6 @@
 #[macro_use] 
 extern crate enum_primitive;
+extern crate bit;
 
 use std::net::SocketAddr;
 use std::thread;

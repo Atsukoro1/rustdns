@@ -22,3 +22,12 @@ pub fn bit_assign<'a, T: Any + Debug>(
         }
     }
 }
+
+/// Convert one unsigned 16 bit integer into two unsigned 8 bit integers
+/// 
+/// Author - https://stackoverflow.com/users/1021920/hellow
+/// 
+/// Returns an array with two 8-bit integers
+pub fn convert_u16_to_two_u8s(integer: u16) -> [u8; 2] {
+    [(integer >> 8) as u8, integer as u8]
+}
