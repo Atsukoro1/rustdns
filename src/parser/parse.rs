@@ -19,15 +19,11 @@ use crate::{
 };
 
 /// Convert DNS struct into raw bytes
-pub fn datagram_bytes(datagram: DNS) -> Box<[u8]> {
-    let mut bytes: [u8; 12] = [
-        0b0000_0000u8, 0b0000_0000u8,
-        0b0000_0000u8, 0b0000_0000u8,
-        0b0000_0000u8, 0b0000_0000u8,
-        0b0000_0000u8, 0b0000_0000u8,
-        0b0000_0000u8, 0b0000_0000u8,
-        0b0000_0000u8, 0b0000_0000u8
-    ];
+pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
+    // Pre-fill first 12 bytes for the header
+    let mut bytes: Vec<u8> = std::iter::repeat(0b0000_0000)
+        .take(520)
+        .collect::<Vec<u8>>();
 
     // Identificator
     let id_u8: [u8; 2] = convert_u16_to_two_u8s(datagram.header.id);
@@ -106,7 +102,46 @@ pub fn datagram_bytes(datagram: DNS) -> Box<[u8]> {
     bytes[10].set_bit_range(0..7, ar_bits[0]);
     bytes[11].set_bit_range(0..7, ar_bits[1]);
 
-    Box::from(bytes)
+    let mut offset: u128 = 12;
+    for question in datagram.questions {
+        let name_parts = question.name.split(".")
+            .collect::<Vec<&str>>();
+
+        // First write the initial length byte and then the content
+        for name in name_parts {
+            let length: usize = name.len();
+
+            bytes[offset as usize] = length as u8;
+            offset += 1;
+
+            name.as_bytes()
+                .into_iter()
+                .for_each(|byte: &u8| {
+                    bytes[offset as usize] = *byte; 
+                    offset += 1;
+                });
+        }
+
+        // Terminating octet to make it clean that this is the end of domain name
+        bytes[offset as usize] = 0x00; 
+        offset += 1;
+
+        let qtype_bytes: [u8; 2] = convert_u16_to_two_u8s(question.qtype as u16);
+
+        bytes[offset as usize] = qtype_bytes[0];
+        offset += 1;
+        bytes[offset as usize] = qtype_bytes[1];
+        offset += 1;
+
+        let qclass_bytes: [u8; 2] = convert_u16_to_two_u8s(question.class as u16);
+        
+        bytes[offset as usize] = qclass_bytes[0];
+        offset += 1;
+        bytes[offset as usize] = qclass_bytes[1];
+        offset += 1;
+    };
+
+    bytes
 }
 
 /// Create a DNS struct from raw bytes

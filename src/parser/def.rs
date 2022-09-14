@@ -201,7 +201,7 @@ pub trait Construct {
     fn from(bytes: &[u8]) -> DNS;
 
     /// Convert the struct into bytes
-    fn bytes(self) -> Box<[u8]>;
+    fn bytes(self) -> Vec<u8>;
 }
 
 impl Construct for DNS {
@@ -209,7 +209,7 @@ impl Construct for DNS {
         parse_datagram(bytes)
     }
 
-    fn bytes(self) -> Box<[u8]> {
+    fn bytes(self) -> Vec<u8> {
         datagram_bytes(self)
     }
 }
