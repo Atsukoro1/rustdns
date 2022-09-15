@@ -50,46 +50,6 @@ pub enum ErrorCode {
     FutureUse
 }
 
-/// DNS Header as described at https://datatracker.ietf.org/doc/html/rfc1035
-/// under the 4.1.1. Header section format
-#[derive(Debug)]
-pub struct DNSHeader {
-    pub id: u16,
-    pub qr: Type,
-    pub op_code: OpCode,
-    pub authoritative: bool,
-    pub truncated: bool,
-    pub recursion_desired: bool,
-    pub recursion_available: bool,
-    pub error_code: ErrorCode,
-    pub question_count: u16,
-    pub answer_count: u16,
-    pub nameserver_count: u16,
-    pub resource_count: u16
-}
-
-/// DNS Question as described at https://datatracker.ietf.org/doc/html/rfc1035
-/// under the 4.1.2. Question section format section
-#[derive(Debug)]
-pub struct DNSQuestion {
-    pub name: String,
-    pub qtype: QuestionType,
-    pub class: QuestionClass
-}
-
-enum_from_primitive! {
-    #[repr(u16)]
-    #[derive(Debug)]
-    /// DNS Question class
-    /// described at https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.4
-    pub enum QuestionClass {
-        IN = 1,
-        CS = 2,
-        CH = 3,
-        HS = 4
-    }
-}
-
 enum_from_primitive! {
     #[repr(u16)]
     #[derive(Debug)]
@@ -114,6 +74,7 @@ enum_from_primitive! {
         MR = 9, 
         NULL = 10,
         WKS = 11,
+        PTR = 12,
         HINFO = 13,
         MINFO = 14,
         MX = 15,
@@ -183,12 +144,68 @@ enum_from_primitive! {
     }
 }
 
+/// DNS Header as described at https://datatracker.ietf.org/doc/html/rfc1035
+/// under the 4.1.1. Header section format
+#[derive(Debug)]
+pub struct DNSHeader {
+    pub id: u16,
+    pub qr: Type,
+    pub op_code: OpCode,
+    pub authoritative: bool,
+    pub truncated: bool,
+    pub recursion_desired: bool,
+    pub recursion_available: bool,
+    pub error_code: ErrorCode,
+    pub question_count: u16,
+    pub answer_count: u16,
+    pub nameserver_count: u16,
+    pub resource_count: u16
+}
+
+/// DNS Question as described at https://datatracker.ietf.org/doc/html/rfc1035
+/// under the 4.1.2. Question section format section
+#[derive(Debug)]
+pub struct DNSQuestion {
+    pub name: String,
+    pub qtype: QuestionType,
+    pub class: QuestionClass
+}
+
+#[derive(Debug)]
+/// DNS Resource format, can be answer, authority or additional
+/// As specified at https://www.ietf.org/rfc/rfc1035.html#section-4.1.3 under the
+/// Resource record format section
+pub struct DNSResourceFormat {
+    name: String,
+    rr_type: QuestionType,
+    rr_class: QuestionClass,
+    ttl: u32,
+    length: u16,
+    data: String,
+}
+
+enum_from_primitive! {
+    #[repr(u16)]
+    #[derive(Debug)]
+    /// DNS Question class
+    /// described at https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.4
+    pub enum QuestionClass {
+        IN = 1,
+        CS = 2,
+        CH = 3,
+        HS = 4
+    }
+}
+
 /// DNS datagram as descibed at https://datatracker.ietf.org/doc/html/rfc1035
 /// under the 4.1. Format section
 #[derive(Debug)]
 pub struct DNS {
     pub header: DNSHeader,
-    pub questions: Vec<DNSQuestion>
+    pub questions: Vec<DNSQuestion>,
+    pub answer: Option<DNSResourceFormat>,
+    pub authority: Option<DNSResourceFormat>,
+    pub additional: Option<DNSResourceFormat>
 }
 
 pub trait Construct {
@@ -224,7 +241,10 @@ impl Construct for DNS {
                 nameserver_count: 0, 
                 resource_count: 0
             }, 
-            questions: vec![]
+            questions: vec![],
+            answer: None,
+            authority: None,
+            additional: None
         }
     }
 

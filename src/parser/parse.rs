@@ -18,6 +18,8 @@ use crate::{
     }
 };
 
+use super::def::DNSResourceFormat;
+
 /// Convert DNS struct into raw bytes
 pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
     // Pre-fill first 12 bytes for the header
@@ -162,6 +164,10 @@ pub fn parse_datagram(bytes: &[u8]) -> DNS {
         resource_count: 0
     };
 
+    let answer: Option<DNSResourceFormat> = None;
+    let authority: Option<DNSResourceFormat> = None;
+    let additional: Option<DNSResourceFormat> = None;
+
     result.id = reader.read_u16(16).unwrap();
 
     result.qr = bit_assign::<Type>(
@@ -263,6 +269,9 @@ pub fn parse_datagram(bytes: &[u8]) -> DNS {
 
     DNS {
         header: result,
-        questions: questions
+        questions: questions,
+        answer: answer,
+        authority: authority,
+        additional: additional
     }
 }
