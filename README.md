@@ -7,7 +7,7 @@
 ## Features (some WIP)
 - Blocking annoying third party `ad/tracking domains`
 - Fast caching using Redis
-- Fully configurable with `.ini` files
+- Fully configurable with `.conf` file
 - Fast and memory safe
 
 ## Usage
