@@ -2,9 +2,11 @@
 extern crate enum_primitive;
 extern crate bit;
 
-use std::net::SocketAddr;
 use std::thread;
 use std::net::UdpSocket;
+use std::net::{
+    SocketAddr
+};
 
 mod parser;
 mod helpers;
@@ -15,7 +17,14 @@ fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
 }
 
 fn main() {
-    let socket = match UdpSocket::bind("127.0.0.1:53") {
+    let config = helpers::config::load_config();
+
+    let socket = match UdpSocket::bind(
+        format!("{}:{}", config.hostname, config.port)
+            .as_str()
+            .parse::<SocketAddr>()
+            .unwrap()
+    ) {
         Ok(s) => s,
         Err(e) => panic!("couldn't bind socket: {}", e)
     };
