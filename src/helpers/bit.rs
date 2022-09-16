@@ -31,3 +31,11 @@ pub fn bit_assign<'a, T: Any + Debug>(
 pub fn convert_u16_to_two_u8s(integer: u16) -> [u8; 2] {
     [(integer >> 8) as u8, integer as u8]
 }
+
+/// Push variables to vec multiple times
+/// Writes values straight into Vector instead of returning it
+pub fn push_byte_vec(vec: &mut Vec<u8>, repeat: u8, item: u8) {
+    for _ in 0..repeat {
+        vec.push(item);
+    };
+}

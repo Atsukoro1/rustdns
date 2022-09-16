@@ -4,7 +4,7 @@ use bitreader::BitReader;
 use crate::{
     helpers::bit::{
         convert_u16_to_two_u8s,
-        bit_assign
+        bit_assign, push_byte_vec
     },
     parser::def::{
         DNS,
@@ -23,16 +23,17 @@ use super::def::DNSResourceFormat;
 /// Convert DNS struct into raw bytes
 pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
     // Pre-fill first 12 bytes for the header
-    let mut bytes: Vec<u8> = std::iter::repeat(0b0000_0000)
-        .take(520)
-        .collect::<Vec<u8>>();
+    let mut bytes: Vec<u8> = vec![];
 
     // Identificator
+    push_byte_vec(&mut bytes, 2, 0x0);
+    println!("{:?}", bytes);
     let id_u8: [u8; 2] = convert_u16_to_two_u8s(datagram.header.id);
-    bytes[0].set_bit_range(0..7, id_u8[0]);
-    bytes[1].set_bit_range(0..7, id_u8[1]);
+    bytes[0] = id_u8[0];
+    bytes[1] = id_u8[1];
 
     // Question or response
+    push_byte_vec(&mut bytes, 1, 0x0);
     bytes[2].set_bit(
         0, 
         if datagram.header.qr == Type::Query {
@@ -70,6 +71,7 @@ pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
     );
 
     // If recursion is available
+    push_byte_vec(&mut bytes, 1, 0x0);
     bytes[3].set_bit(
         0, 
         datagram.header.recursion_available
@@ -88,18 +90,22 @@ pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
     };
     bytes[3].set_bit_range(4..7, rcode_bits);
 
+    push_byte_vec(&mut bytes, 2, 0x0);
     let q_bits: [u8; 2] = convert_u16_to_two_u8s(datagram.header.question_count);
     bytes[4].set_bit_range(0..7, q_bits[0]);
     bytes[5].set_bit_range(0..7, q_bits[1]);
 
+    push_byte_vec(&mut bytes, 2, 0x0);
     let an_bits: [u8; 2] = convert_u16_to_two_u8s(datagram.header.answer_count);
     bytes[6].set_bit_range(0..7, an_bits[0]);
     bytes[7].set_bit_range(0..7, an_bits[1]);
 
+    push_byte_vec(&mut bytes, 2, 0x0);
     let ns_bits: [u8; 2] = convert_u16_to_two_u8s(datagram.header.nameserver_count);
     bytes[8].set_bit_range(0..7, ns_bits[0]);
     bytes[9].set_bit_range(0..7, ns_bits[1]);
 
+    push_byte_vec(&mut bytes, 2, 0x0);
     let ar_bits: [u8; 2] = convert_u16_to_two_u8s(datagram.header.resource_count);
     bytes[10].set_bit_range(0..7, ar_bits[0]);
     bytes[11].set_bit_range(0..7, ar_bits[1]);

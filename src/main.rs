@@ -8,12 +8,14 @@ use std::net::{
     SocketAddr
 };
 
+use crate::parser::def::Construct;
+
 mod parser;
 mod helpers;
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
     let datagram: parser::def::DNS = <parser::def::DNS as parser::def::Construct>::from(bytes);
-    println!("{:?}", datagram);
+    datagram.bytes();
 }
 
 fn main() {
