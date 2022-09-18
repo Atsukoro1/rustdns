@@ -2,7 +2,8 @@ use configparser::ini::Ini;
 
 pub struct Config {
     pub hostname: String,
-    pub port: u16
+    pub port: u16,
+    pub redis_addr: String
 }
 
 /// Load config from config.conf file located in root directory
@@ -16,6 +17,7 @@ pub fn load_config() -> Config {
         );
 
     Config { 
+        redis_addr: config.get("cache", "redis_addr").unwrap(),
         hostname: config.get("host", "hostname").unwrap(),
         port: config.get("host", "port")
             .unwrap()
