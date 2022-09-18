@@ -1,10 +1,6 @@
-# 📚 Rustdns
+# Rustdns
 
-[![forthebadge](https://forthebadge.com/images/badges/made-with-rust.svg)](http://forthebadge.com)
-&nbsp;
-[![forthebadge](https://forthebadge.com/images/badges/contains-tasty-spaghetti-code.svg)](http://forthebadge.com)
-
-## Features (some WIP)
+## Expected features
 - Blocking annoying third party `ad/tracking domains`
 - Fast caching using Redis
 - Fully configurable with `.conf` file
@@ -33,4 +29,4 @@ The code itself is well-documented, so if you want to know something, data sourc
 2. IANA (Internet Assiged Numbers Authority) - Root hint, zone and nameserver files Available at: https://www.iana.org/domains/root/files
 ## License
 
-The MIT License (MIT) 2017 - [Jakub Dorničák](https://github.com/atsukoro1/). Please have a look at the non-existent [LICENSE.md](LICENSE.md) for more details.
+The MIT License (MIT) 2022 - [Jakub Dorničák](https://github.com/atsukoro1/).
