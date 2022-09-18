@@ -1,6 +1,7 @@
-use bit::BitIndex;
+use super::def::DNSResourceFormat;
 use enum_primitive::FromPrimitive;
 use bitreader::BitReader;
+use bit::BitIndex;
 use crate::{
     helpers::bit::{
         convert_u16_to_two_u8s,
@@ -18,8 +19,6 @@ use crate::{
     }
 };
 
-use super::def::DNSResourceFormat;
-
 /// Convert DNS struct into raw bytes
 pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
     // Pre-fill first 12 bytes for the header
@@ -27,7 +26,6 @@ pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
 
     // Identificator
     push_byte_vec(&mut bytes, 2, 0x0);
-    println!("{:?}", bytes);
     let id_u8: [u8; 2] = convert_u16_to_two_u8s(datagram.header.id);
     bytes[0] = id_u8[0];
     bytes[1] = id_u8[1];
@@ -45,10 +43,10 @@ pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
 
     // Opcode
     let opc_bits: u8 = match datagram.header.op_code {
-        OpCode::Query => 0x1,
-        OpCode::IQuery => 0x2,
-        OpCode::Status => 0x3,
-        OpCode::FutureUse => 0x4
+        OpCode::Query => 0x0,
+        OpCode::IQuery => 0x1,
+        OpCode::Status => 0x2,
+        OpCode::FutureUse => 0x3
     };
     bytes[2].set_bit_range(1..4, opc_bits);
 
@@ -156,7 +154,7 @@ pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
 }
 
 /// Create a DNS struct from raw bytes
-pub fn parse_datagram(bytes: &[u8]) -> DNS {
+pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ErrorCode> {
     let mut reader = BitReader::new(bytes);
     let mut result = DNSHeader {
         id: 0,
@@ -219,12 +217,12 @@ pub fn parse_datagram(bytes: &[u8]) -> DNS {
     reader.skip(3).unwrap();
 
     result.error_code = match reader.read_u8(4).unwrap() {
-        0 => ErrorCode::NoError,
-        1 => ErrorCode::FormatError,
-        2 => ErrorCode::ServerFailure,
-        3 => ErrorCode::NameError,
-        4 => ErrorCode::NotImplemented,
-        5 => ErrorCode::Refused,
+        0x0 => ErrorCode::NoError,
+        0x1 => ErrorCode::FormatError,
+        0x2 => ErrorCode::ServerFailure,
+        0x3 => ErrorCode::NameError,
+        0x4 => ErrorCode::NotImplemented,
+        0x5 => ErrorCode::Refused,
         _ => ErrorCode::FutureUse
     };
 
@@ -276,11 +274,11 @@ pub fn parse_datagram(bytes: &[u8]) -> DNS {
         questions.push(question);
     }
 
-    DNS {
+    Ok(DNS {
         header: result,
         questions: questions,
         answer: answer,
         authority: authority,
         additional: additional
-    }
+    })
 }

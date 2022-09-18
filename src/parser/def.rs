@@ -144,21 +144,71 @@ enum_from_primitive! {
     }
 }
 
-/// DNS Header as described at https://datatracker.ietf.org/doc/html/rfc1035
+/// DNS Header as described at https://datatracker.ietf.org/doc/html/rfc1035#section-4.1.1
 /// under the 4.1.1. Header section format
 #[derive(Debug)]
 pub struct DNSHeader {
+    /// A 16 bit identifier assigned by the program that
+    /// generates any kind of query.  This identifier is copied
+    /// the corresponding reply and can be used by the requester
+    /// to match up replies to outstanding queries.
     pub id: u16,
+
+    /// A one bit field that specifies whether this message is a
+    /// query (0), or a response (1).
     pub qr: Type,
+
+    /// A four bit field that specifies kind of query in this
+    /// message.  This value is set by the originator of a query
+    /// and copied into the response. These values are further
+    /// described in OpCode struct definition
     pub op_code: OpCode,
+
+    /// Authoritative Answer - this bit is valid in responses,
+    /// and specifies that the responding name server is an
+    /// authority for the domain name in question section.
     pub authoritative: bool,
+
+    /// Authoritative Answer - this bit is valid in responses,
+    /// and specifies that the responding name server is an
+    /// authority for the domain name in question section.
+    /// Note that the contents of the answer section may have
+    /// multiple owner names because of aliases.  The AA bit
+    /// corresponds to the name which matches the query name, or
+    /// the first owner name in the answer section.
     pub truncated: bool,
+
+    /// Recursion Desired - this bit may be set in a query and
+    /// is copied into the response.  If RD is set, it directs
+    /// the name server to pursue the query recursively.
+    /// Recursive query support is optional.
     pub recursion_desired: bool,
+
+    /// Recursion Available - this be is set or cleared in a
+    /// response, and denotes whether recursive query support is
+    /// available in the name server.
     pub recursion_available: bool,
+
+    /// Response code - this 4 bit field is set as part of
+    /// responses. The values are further described in ErrorCode
+    /// struct definition
     pub error_code: ErrorCode,
+
+    /// an unsigned 16 bit integer specifying the number of
+    /// entries in the question section.
     pub question_count: u16,
+
+    /// an unsigned 16 bit integer specifying the number of
+    /// resource records in the answer section.
     pub answer_count: u16,
+
+    /// an unsigned 16 bit integer specifying the number of name
+    /// server resource records in the authority records
+    /// section.
     pub nameserver_count: u16,
+
+    /// an unsigned 16 bit integer specifying the number of
+    /// resource records in the additional records section.
     pub resource_count: u16
 }
 
@@ -176,12 +226,35 @@ pub struct DNSQuestion {
 /// As specified at https://www.ietf.org/rfc/rfc1035.html#section-4.1.3 under the
 /// Resource record format section
 pub struct DNSResourceFormat {
-    name: String,
-    rr_type: QuestionType,
-    rr_class: QuestionClass,
-    ttl: u32,
-    length: u16,
-    data: String,
+    /// a domain name to which this resource record pertains.
+    pub name: String,
+
+    /// two octets containing one of the RR type codes.  This
+    /// field specifies the meaning of the data in the RDATA
+    /// field.
+    pub rr_type: QuestionType,
+
+    /// two octets which specify the class of the data in the
+    /// RDATA field.
+    pub rr_class: QuestionClass,
+
+    /// a 32 bit unsigned integer that specifies the time
+    /// interval (in seconds) that the resource record may be
+    /// cached before it should be discarded.  Zero values are
+    /// interpreted to mean that the RR can only be used for the
+    /// transaction in progress, and should not be cached.
+    pub ttl: u32,
+
+    /// an unsigned 16 bit integer that specifies the length in
+    /// octets of the RDATA field.
+    pub length: u16,
+
+    /// a variable length string of octets that describes the
+    /// resource.  The format of this information varies
+    /// according to the TYPE and CLASS of the resource record.
+    /// For example, the if the TYPE is A and the CLASS is IN,
+    /// the RDATA field is a 4 octet ARPA Internet address.
+    pub data: String,
 }
 
 enum_from_primitive! {
@@ -190,9 +263,17 @@ enum_from_primitive! {
     /// DNS Question class
     /// described at https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.4
     pub enum QuestionClass {
+        /// the Internet
         IN = 1,
+
+        /// the CSNET class (Obsolete - used only for examples in
+        /// some obsolete RFCs)
         CS = 2,
+
+        /// the CHAOS class
         CH = 3,
+
+        /// Hesiod [Dyer 87]
         HS = 4
     }
 }
@@ -217,8 +298,9 @@ pub trait Construct {
     /// As described at https://datatracker.ietf.org/doc/html/rfc1035 under
     /// the 4.1.1 Header section format
     /// 
-    /// Returns DNS struct containing header and question
-    fn from(bytes: &[u8]) -> DNS;
+    /// Returns a Result that can contain DNS struct or an error code with 
+    /// specific error that will be contained in invalid response
+    fn from(bytes: &[u8]) -> Result<DNS, ErrorCode>;
 
     /// Convert the struct into bytes
     fn bytes(self) -> Vec<u8>;
@@ -248,7 +330,7 @@ impl Construct for DNS {
         }
     }
 
-    fn from(bytes: &[u8]) -> DNS {
+    fn from(bytes: &[u8]) -> Result<DNS, ErrorCode> {
         parse_datagram(bytes)
     }
 
