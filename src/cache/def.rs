@@ -1,18 +1,18 @@
+use std::net::SocketAddr;
+
+use crate::{helpers::iana, parser::def::QuestionType};
 use redis::Connection;
 use crate::CONFIG;
-use super::modules::{
-    tld::{TLDController, TLDT}, 
-    root::RootController, 
-    zone::ZoneController
-};
+
+#[derive(Debug)]
+pub struct RootServer {
+    pub qtype: QuestionType,
+    pub ip: SocketAddr,
+    pub tld: u32
+}
 
 pub struct CacheManager {
     pub redis_instance: Option<Connection>,
-    
-    // Controllers
-    pub tld_controller: TLDController,
-    pub root_controller: RootController,
-    pub zone_controller: ZoneController
 }
 
 #[async_trait::async_trait]
@@ -27,6 +27,7 @@ pub trait CMTrait {
     fn connect(&mut self) -> Result<(), String>;
 
     /// Load resources from IANA
+    /// Resources are only loaded if the result is not already cached
     /// 
     /// Helpers will fetch following resources and return them here to cache
     /// https://www.internic.net/domain/named.root
@@ -42,9 +43,6 @@ impl CMTrait for CacheManager {
     fn new() -> CacheManager {
         CacheManager { 
             redis_instance: None,
-            tld_controller: TLDController,
-            root_controller: RootController,
-            zone_controller: ZoneController
         }
     }
 
@@ -67,7 +65,7 @@ impl CMTrait for CacheManager {
     }
 
     async fn load_resources(&mut self) -> Result<(), String> {
-        self.tld_controller.load().await;
+        println!("{:?}", iana::fp_root_servers().await);
         Ok(())
     }
 }

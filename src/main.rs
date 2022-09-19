@@ -25,7 +25,11 @@ lazy_static! {
                 .parse::<SocketAddr>()
                 .unwrap()
         ) {
-            Ok(s) => s,
+            Ok(s) => {
+                println!("UDP socket succefully started!");
+                s
+            },
+            
             Err(e) => panic!("couldn't bind socket: {}", e)
         };
 
