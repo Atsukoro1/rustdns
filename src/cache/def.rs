@@ -1,10 +1,21 @@
 use redis::Connection;
 use crate::CONFIG;
+use super::modules::{
+    tld::{TLDController, TLDT}, 
+    root::RootController, 
+    zone::ZoneController
+};
 
 pub struct CacheManager {
-    pub redis_instance: Option<Connection>
+    pub redis_instance: Option<Connection>,
+    
+    // Controllers
+    pub tld_controller: TLDController,
+    pub root_controller: RootController,
+    pub zone_controller: ZoneController
 }
 
+#[async_trait::async_trait]
 pub trait CMTrait {
     /// Creates a new instance of Cache manager
     fn new() -> CacheManager;
@@ -23,12 +34,18 @@ pub trait CMTrait {
     /// https://data.iana.org/TLD/tlds-alpha-by-domain.txt
     /// 
     /// Can return error in String format
-    fn load_resources(&mut self) -> Result<(), String>;
+    async fn load_resources(&mut self) -> Result<(), String>;
 }
 
+#[async_trait::async_trait]
 impl CMTrait for CacheManager {
     fn new() -> CacheManager {
-        CacheManager { redis_instance: None }
+        CacheManager { 
+            redis_instance: None,
+            tld_controller: TLDController,
+            root_controller: RootController,
+            zone_controller: ZoneController
+        }
     }
 
     fn connect(&mut self) -> Result<(), String> {
@@ -49,7 +66,8 @@ impl CMTrait for CacheManager {
         Ok(())
     }
 
-    fn load_resources(&mut self) -> Result<(), String> {
+    async fn load_resources(&mut self) -> Result<(), String> {
+        self.tld_controller.load().await;
         Ok(())
     }
 }
