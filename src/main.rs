@@ -3,6 +3,7 @@ extern crate enum_primitive;
 extern crate bit;
 
 use lazy_static::lazy_static;
+use tokio::sync::{Mutex, MutexGuard};
 use std::net::{UdpSocket, SocketAddr};
 use std::thread;
 use crate::helpers::config::Config;
@@ -31,7 +32,7 @@ lazy_static! {
         sckt
     };
 
-    pub static ref CACHEMANAGER: CacheManager = {
+    pub static ref CACHEMANAGER: tokio::sync::Mutex<CacheManager> = Mutex::new({
         let mut manager = CacheManager::new();
 
         match manager.connect() {
@@ -40,7 +41,7 @@ lazy_static! {
         }
 
         manager
-    };
+    });
 }
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
@@ -52,6 +53,16 @@ fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
 
 #[tokio::main]
 async fn main() {
+    let mut current_cm: MutexGuard<CacheManager> = CACHEMANAGER.lock()
+        .await;
+
+    current_cm.connect()   
+        .expect("Failed to connect to cache manager");
+
+    current_cm.load_resources()
+        .await
+        .expect("Failed to load resources");
+
     loop {
         let mut buf = [0; 512];
 
