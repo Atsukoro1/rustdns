@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 bit = "0.1.1"
 redis = "0.21.6"
+futures = "0.3.24"
 bitreader = "0.3.6"
 async_ftp = "6.0.0"
 reqwest = "0.11.11"

@@ -3,7 +3,7 @@ extern crate enum_primitive;
 extern crate bit;
 
 use lazy_static::lazy_static;
-use tokio::sync::{Mutex, MutexGuard};
+use tokio::sync::{MutexGuard, Mutex};
 use std::net::{UdpSocket, SocketAddr};
 use std::thread;
 use crate::helpers::config::Config;
