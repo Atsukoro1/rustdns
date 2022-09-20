@@ -71,9 +71,9 @@ impl CMTrait for CacheManager {
     }
 
     async fn load_resources(&mut self) -> Result<(), String> {
-        let mut redis_c = self.redis_instance.as_ref().unwrap().lock().await;
-        redis_c.set::<&str, &str, String>("fdsfd", "fdf").expect("Failed XDDD");
-        // println!("{:?}", iana::fp_root_servers().await);
+        // let mut redis_c = self.redis_instance.as_ref().unwrap().lock().await;
+        // redis_c.set::<&str, &str, String>("fdsfd", "fdf").expect("Failed XDDD");
+        println!("{:?}", iana::fp_root_servers().await);
         Ok(())
     }
 }

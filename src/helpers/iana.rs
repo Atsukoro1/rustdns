@@ -15,7 +15,18 @@ pub async fn fp_root_servers() -> Vec<RootServer> {
         .unwrap();
 
     let remote_file = stream.simple_retr("named.cache").await.unwrap();
-    println!("Read file with contents\n{}\n", std::str::from_utf8(&remote_file.into_inner()).unwrap());
+
+    let mut split_f: Vec<String> = std::str::from_utf8(&remote_file.into_inner())
+        .unwrap()
+        .split("\n")
+        .map(|item| {
+            item.to_string()
+        })
+        .collect::<Vec<String>>();
+
+    // Remove first 15 lines of document info and last line containing EOF sign
+    split_f.drain(0..14);
+    split_f.pop().unwrap();
 
     vec![RootServer { qtype: todo!(), ip: todo!(), tld: todo!() }]
 }
