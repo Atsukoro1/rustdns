@@ -6,15 +6,17 @@ use std::net::SocketAddr;
 use tokio::sync::Mutex;
 use redis::{
     Connection, 
-    Commands
 };
 use crate::CONFIG;
 
 #[derive(Debug)]
 pub struct RootServer {
     pub qtype: QuestionType,
-    pub ip: SocketAddr,
-    pub tld: u32
+    pub ttl: u32,
+
+    // Either ip or domain must be defined.
+    pub domain: Option<String>,
+    pub ip: Option<SocketAddr>,
 }
 
 pub struct CacheManager {
