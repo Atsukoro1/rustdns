@@ -1,11 +1,14 @@
 use crate::parser::def::QuestionType;
-use std::net::SocketAddr;
+use std::{net::SocketAddr, vec::IntoIter};
 use redis::{
     Connection,
     Commands,
 };
 use tokio::sync::Mutex;
-use crate::CONFIG;
+use crate::{
+    CONFIG,
+    helpers::iana
+};
 
 #[derive(Debug)]
 pub struct RootServer {
@@ -71,9 +74,30 @@ impl CMTrait for CacheManager {
     }
 
     async fn load_resources(&mut self) -> Result<(), String> {
-        let mut redis_c = self.redis_instance.as_mut()
+        let redis_c = self.redis_instance.as_mut()
             .unwrap()
             .get_mut();
+
+        match redis_c.get::<&str, Option<String>>("TLD:COM").unwrap() {
+            Some(..) => {
+                // Already cached
+            },
+
+            None => {
+                // Not cached
+                let tlds: IntoIter<String> = iana::fp_tlds()
+                    .await
+                    .expect("Failed to fetch TLDs")
+                    .into_iter();
+
+                tlds.for_each(|item: String| {
+                    redis_c.set::<&str, String, String>(
+                        format!("TLD:{}", item).as_str(), 
+                        "exists".to_string()
+                    ).expect("Failed to set TLD");
+                });
+            }
+        }
 
         Ok(())
     }
