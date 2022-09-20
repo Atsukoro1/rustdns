@@ -5,13 +5,14 @@ edition = "2021"
 
 [dependencies]
 bit = "0.1.1"
-redis = "0.21.6"
+slog = "2.7.0"
 futures = "0.3.24"
 bitreader = "0.3.6"
 async_ftp = "6.0.0"
 reqwest = "0.11.11"
 lazy_static = "1.4.0"
+async-trait = "0.1.57"
 configparser = "3.0.2"
 enum_primitive = "0.1.1"
 tokio = { version = "1.21.1", features = ["full"] }
-async-trait = "0.1.57"
+redis = { version = "0.21.6", features = ["tokio-comp"] }

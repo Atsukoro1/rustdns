@@ -1,12 +1,10 @@
-use crate::{
-    parser::def::QuestionType,
-    helpers::iana, 
-};
+use crate::parser::def::QuestionType;
 use std::net::SocketAddr;
-use tokio::sync::Mutex;
 use redis::{
-    Connection, 
+    Connection,
+    Commands,
 };
+use tokio::sync::Mutex;
 use crate::CONFIG;
 
 #[derive(Debug)]
@@ -50,7 +48,7 @@ pub trait CMTrait {
 impl CMTrait for CacheManager {
     fn new() -> CacheManager {
         CacheManager { 
-            redis_instance: None,
+            redis_instance: None::<tokio::sync::Mutex<Connection>>,
         }
     }
 
@@ -73,9 +71,10 @@ impl CMTrait for CacheManager {
     }
 
     async fn load_resources(&mut self) -> Result<(), String> {
-        // let mut redis_c = self.redis_instance.as_ref().unwrap().lock().await;
-        // redis_c.set::<&str, &str, String>("fdsfd", "fdf").expect("Failed XDDD");
-        println!("{:?}", iana::fp_root_servers().await);
+        let mut redis_c = self.redis_instance.as_mut()
+            .unwrap()
+            .get_mut();
+
         Ok(())
     }
 }
