@@ -1,6 +1,6 @@
 use async_ftp::FtpStream;
 use crate::parser::def::QuestionType;
-use std::net::SocketAddr;
+use std::net::{SocketAddr, IpAddr};
 
 pub async fn fetch_parse_rs_list() -> Vec<RootServer> {
     let mut stream = FtpStream::connect("FTP.INTERNIC.NET:21")
@@ -51,7 +51,7 @@ pub struct RootServer {
 
     // Either ip or domain must be defined.
     pub domain: Option<String>,
-    pub ip: Option<SocketAddr>,
+    pub ip: Option<IpAddr>,
 }
 
 pub trait RootServerT {
@@ -64,46 +64,38 @@ pub trait RootServerT {
 
 impl RootServerT for RootServer {
     fn from_str_vec(src: Vec<&str>) -> RootServer {
-        match src[3].parse::<SocketAddr>() {
-            // This record contains IPv4 or IPv6 thus either A or AAAA
-            Ok(addr) => {
-                RootServer { 
-                    qtype: (|| {
-                        match src[2] {
-                            "NS" => QuestionType::NS,
-                            "A" => QuestionType::A,
-                            "AAAA" => QuestionType::AAAA,
-                            _ => {
-                                panic!("This question type does not exist!");
-                            }
-                        }
-                    })(), 
-                    ttl: src[1].parse::<u32>()
-                        .unwrap(), 
-                    domain: None, 
-                    ip: Some(addr)
+        println!("{:?}", src);
+        RootServer { 
+            qtype: (|| {
+                match src[2] {
+                    "NS" => QuestionType::NS,
+                    "A" => QuestionType::A,
+                    "AAAA" => QuestionType::AAAA,
+                    _ => {
+                        panic!("This question type does not exist!");
+                    }
                 }
-            },
+            })(), 
+            ttl: src[1].parse::<u32>()
+                .unwrap(), 
+            
+            // Domains are only valid if the record type is "NS"
+            domain: (|| {
+                 if src[2] == "NS" {
+                    Some(src[3].to_string())
+                 } else {
+                    None
+                 }
+            })(), 
 
-            // This is nameserver record, contains domain
-            Err(..) => {
-                RootServer { 
-                    qtype: (|| {
-                        match src[2] {
-                            "NS" => QuestionType::NS,
-                            "A" => QuestionType::A,
-                            "AAAA" => QuestionType::AAAA,
-                            _ => {
-                                panic!("This question type does not exist!");
-                            }
-                        }
-                    })(), 
-                    ttl: src[1].parse::<u32>()
-                        .unwrap(), 
-                    domain: Some(src[3].to_string()), 
-                    ip: None
+            // IP address is only valid if record type is either "A" or "AAAA"
+            ip: (|| {
+                if src[2] == "NS" {
+                    None 
+                } else {
+                    Some(src[3].trim().parse::<IpAddr>().unwrap())
                 }
-            }
+            })()
         }
     }
 

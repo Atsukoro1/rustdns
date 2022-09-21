@@ -1,4 +1,4 @@
-use crate::{CONFIG, LOGGER};
+use crate::{CONFIG, LOGGER, cache::modules::rootserver::RootServerT};
 use tokio::sync::Mutex;
 use std::vec::IntoIter;
 use super::modules::{
@@ -118,7 +118,7 @@ impl CMTrait for CacheManager {
                     .into_iter();
 
                 root_servers.for_each(|item: RootServer| {
-                    
+                    item.to_str();
                 });
             }
         }

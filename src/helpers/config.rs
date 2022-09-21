@@ -2,7 +2,10 @@ use serde::{
     Serialize, 
     Deserialize
 };
-use std::{fs::File, io::Read};
+use std::{
+    fs::File, 
+    io::Read
+};
 
 #[derive(Serialize, Deserialize)]
 pub enum LogType {
