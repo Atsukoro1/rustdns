@@ -32,17 +32,6 @@ mod cache;
 
 lazy_static! {
     pub static ref LOGGER: slog::Logger = {
-        /* 
-            This will bind expect to this and display critical error using
-            slog crate before the program exits
-        */
-        std::panic::set_hook(Box::new(|info| {
-            if let Some(s) = info.payload().downcast_ref::<String>() {
-                crit!(LOGGER, "{}", s);
-                panic!();
-            }
-        }));
-
         let decorator = slog_term::TermDecorator::new()
             .stdout()
             .force_color()
