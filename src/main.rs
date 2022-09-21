@@ -5,24 +5,44 @@ extern crate slog_term;
 extern crate slog;
 extern crate bit;
 
-use lazy_static::lazy_static;
-use slog::{o, Drain, info, crit};
-use tokio::sync::{MutexGuard, Mutex};
-use std::net::{UdpSocket, SocketAddr};
-use std::thread;
 use crate::helpers::config::Config;
-use crate::cache::def::{CacheManager, CMTrait};
+use lazy_static::lazy_static;
+use crate::cache::def::{
+    CacheManager, CMTrait
+};
+use tokio::sync::{
+    MutexGuard, 
+    Mutex
+};
+use std::thread;
+use std::net::{
+    UdpSocket, 
+    SocketAddr
+};
+use slog::{
+    o, 
+    Drain, 
+    info, 
+    crit
+};
 
 mod parser;
 mod helpers;
 mod cache;
 
 lazy_static! {
-    pub static ref CONFIG: Config = {
-        helpers::config::load_config()
-    };
-
     pub static ref LOGGER: slog::Logger = {
+        /* 
+            This will bind expect to this and display critical error using
+            slog crate before the program exits
+        */
+        std::panic::set_hook(Box::new(|info| {
+            if let Some(s) = info.payload().downcast_ref::<String>() {
+                crit!(LOGGER, "{}", s);
+                panic!();
+            }
+        }));
+
         let decorator = slog_term::TermDecorator::new()
             .stdout()
             .force_color()
@@ -36,7 +56,11 @@ lazy_static! {
             .build()
             .fuse();
     
-        slog::Logger::root(drain, o!("RUSTDNS" => "Rust dns is running!"))
+        slog::Logger::root(drain, o!("RUSTDNS" => "Rust dns is starting!"))
+    };
+
+    pub static ref CONFIG: Config = {
+        helpers::config::load_config().unwrap()
     };
 
     pub static ref SOCKET: UdpSocket = {

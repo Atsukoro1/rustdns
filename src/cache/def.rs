@@ -3,6 +3,7 @@ use redis::{
     Connection,
     Commands,
 };
+use slog::o;
 use tokio::sync::Mutex;
 use crate::CONFIG;
 use super::modules::{
@@ -58,17 +59,21 @@ impl CMTrait for CacheManager {
             .unwrap()
             .get_connection();
 
-        connection
-            .is_err()
-            .then(|| {
-                return Err::<(), String>(String::from(
-                    "Failed to estabilish connection with Redis instance"
+        match connection {
+            Ok(..) => {
+                return Ok(self.redis_instance = Some(
+                    Mutex::from(
+                        connection.expect("Failed to start redis cache")
+                    )
                 ));
-            });
+            },
 
-        self.redis_instance = Some(Mutex::from(connection.unwrap()));
-
-        Ok(())
+            Err(e) => {
+                return Result::Err::<(), String>(
+                    e.to_string()
+                );
+            }
+        }
     }
 
     async fn load_resources(&mut self) -> Result<(), String> {

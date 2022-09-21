@@ -4,7 +4,6 @@ pub enum LoggingType {
     TERMINAL,
     FILE
 }
-
 pub struct Config {
     pub hostname: String,
     pub port: u16,
@@ -13,9 +12,16 @@ pub struct Config {
     pub on: bool,
 }
 
+#[derive(Debug)]
+pub struct ConfigError {
+    pub message: String,
+    pub category: String, 
+    pub field: String
+}
+
 /// Load config from config.conf file located in root directory
 /// Returns config struct
-pub fn load_config() -> Config {
+pub fn load_config() -> Result<Config, ConfigError> {
     let mut config = Ini::new();
     config.load(std::path::Path::new("./config.conf"))
         .expect(
@@ -23,7 +29,7 @@ pub fn load_config() -> Config {
             repo's readme or create a new issue on github."
         );
 
-    Config { 
+    Ok(Config { 
         redis_addr: config.get("cache", "redis_addr").unwrap(),
         hostname: config.get("host", "hostname").unwrap(),
         port: config.get("host", "port")
@@ -46,5 +52,5 @@ pub fn load_config() -> Config {
                 LoggingType::TERMINAL
             }
         })())
-    }
+    })
 } 
