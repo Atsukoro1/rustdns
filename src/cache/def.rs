@@ -1,12 +1,15 @@
-use crate::parser::def::QuestionType;
-use std::{net::SocketAddr, vec::IntoIter};
+use std::vec::IntoIter;
 use redis::{
     Connection,
     Commands,
 };
 use tokio::sync::Mutex;
 use crate::CONFIG;
-use super::modules::{tld::fp_tlds, rootserver::fetch_parse_rs_list, rootserver::RootServer};
+use super::modules::{
+    tld::fp_tlds, 
+    rootserver::fetch_parse_rs_list, 
+    rootserver::RootServer
+};
 
 pub struct CacheManager {
     pub redis_instance: Option<Mutex<Connection>>,

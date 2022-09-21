@@ -1,8 +1,10 @@
 #[macro_use] 
 extern crate enum_primitive;
+extern crate slog;
 extern crate bit;
 
 use lazy_static::lazy_static;
+use slog::info;
 use tokio::sync::{MutexGuard, Mutex};
 use std::net::{UdpSocket, SocketAddr};
 use std::thread;
