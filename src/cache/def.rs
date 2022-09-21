@@ -5,20 +5,8 @@ use redis::{
     Commands,
 };
 use tokio::sync::Mutex;
-use crate::{
-    CONFIG,
-    helpers::iana,
-};
-
-#[derive(Debug)]
-pub struct RootServer {
-    pub qtype: QuestionType,
-    pub ttl: u32,
-
-    // Either ip or domain must be defined.
-    pub domain: Option<String>,
-    pub ip: Option<SocketAddr>,
-}
+use crate::CONFIG;
+use super::modules::{tld::fp_tlds, rootserver::fetch_parse_rs_list, rootserver::RootServer};
 
 pub struct CacheManager {
     pub redis_instance: Option<Mutex<Connection>>,
@@ -92,7 +80,7 @@ impl CMTrait for CacheManager {
 
             None => {
                 // Not cached
-                let tlds: IntoIter<String> = iana::fp_tlds()
+                let tlds: IntoIter<String> = fp_tlds()
                     .await
                     .expect("Failed to fetch TLDs")
                     .into_iter();
@@ -113,12 +101,12 @@ impl CMTrait for CacheManager {
 
             None => {
                 // Not cached
-                let root_servers: IntoIter<RootServer> = iana::fp_root_servers()
+                let root_servers: IntoIter<RootServer> = fetch_parse_rs_list()
                     .await
                     .into_iter();
 
                 root_servers.for_each(|item: RootServer| {
-
+                    
                 });
             }
         }

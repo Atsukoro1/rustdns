@@ -64,21 +64,46 @@ pub trait RootServerT {
 
 impl RootServerT for RootServer {
     fn from_str_vec(src: Vec<&str>) -> RootServer {
-        RootServer { 
-            qtype: (|| {
-                match src[2] {
-                    "NS" => QuestionType::NS,
-                    "A" => QuestionType::A,
-                    "AAAA" => QuestionType::AAAA,
-                    _ => {
-                        panic!("This question type does not exist!");
-                    }
+        match src[3].parse::<SocketAddr>() {
+            // This record contains IPv4 or IPv6 thus either A or AAAA
+            Ok(addr) => {
+                RootServer { 
+                    qtype: (|| {
+                        match src[2] {
+                            "NS" => QuestionType::NS,
+                            "A" => QuestionType::A,
+                            "AAAA" => QuestionType::AAAA,
+                            _ => {
+                                panic!("This question type does not exist!");
+                            }
+                        }
+                    })(), 
+                    ttl: src[1].parse::<u32>()
+                        .unwrap(), 
+                    domain: None, 
+                    ip: Some(addr)
                 }
-            })(), 
-            ttl: src[1].parse::<u32>()
-                .unwrap(), 
-            domain: Some(src[3].to_string()), 
-            ip: None
+            },
+
+            // This is nameserver record, contains domain
+            Err(..) => {
+                RootServer { 
+                    qtype: (|| {
+                        match src[2] {
+                            "NS" => QuestionType::NS,
+                            "A" => QuestionType::A,
+                            "AAAA" => QuestionType::AAAA,
+                            _ => {
+                                panic!("This question type does not exist!");
+                            }
+                        }
+                    })(), 
+                    ttl: src[1].parse::<u32>()
+                        .unwrap(), 
+                    domain: Some(src[3].to_string()), 
+                    ip: None
+                }
+            }
         }
     }
 
