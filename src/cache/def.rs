@@ -7,7 +7,7 @@ use redis::{
 use tokio::sync::Mutex;
 use crate::{
     CONFIG,
-    helpers::iana
+    helpers::iana,
 };
 
 #[derive(Debug)]
@@ -42,6 +42,13 @@ pub trait CMTrait {
     /// https://www.internic.net/domain/named.root
     /// https://www.internic.net/domain/root.zone
     /// https://data.iana.org/TLD/tlds-alpha-by-domain.txt
+    /// 
+    /// Here are the formats resources are cached in ->
+    /// 
+    /// 1. Top level domains -> TLD:<domain>
+    /// 
+    /// 2. Root servers -> ROOT_<qtype> as a key and 
+    /// list of root servers separated by "," in following format tld_ip/domain as value
     /// 
     /// Can return error in String format
     async fn load_resources(&mut self) -> Result<(), String>;
@@ -95,6 +102,23 @@ impl CMTrait for CacheManager {
                         format!("TLD:{}", item).as_str(), 
                         "exists".to_string()
                     ).expect("Failed to set TLD");
+                });
+            }
+        }
+
+        match redis_c.get::<&str, Option<String>>("ROOT:A").unwrap() {
+            Some(..) => {
+                // Already cached
+            },
+
+            None => {
+                // Not cached
+                let root_servers: IntoIter<RootServer> = iana::fp_root_servers()
+                    .await
+                    .into_iter();
+
+                root_servers.for_each(|item: RootServer| {
+
                 });
             }
         }
