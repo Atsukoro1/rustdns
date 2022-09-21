@@ -3,13 +3,13 @@ use redis::{
     Connection,
     Commands,
 };
-use slog::info;
+use slog::o;
 use tokio::sync::Mutex;
-use crate::{CONFIG, LOGGER};
+use crate::CONFIG;
 use super::modules::{
-    rootserver::fetch_parse_rs_list, 
-    rootserver::RootServer,
     tld::fp_tlds, 
+    rootserver::fetch_parse_rs_list, 
+    rootserver::RootServer
 };
 
 pub struct CacheManager {
@@ -84,12 +84,10 @@ impl CMTrait for CacheManager {
         match redis_c.get::<&str, Option<String>>("TLD:COM").unwrap() {
             Some(..) => {
                 // Already cached
-                info!(LOGGER, "Top level domain list is already cached!");
             },
 
             None => {
                 // Not cached
-                info!(LOGGER, "Caching top level domain list...");
                 let tlds: IntoIter<String> = fp_tlds()
                     .await
                     .expect("Failed to fetch TLDs")
@@ -107,12 +105,10 @@ impl CMTrait for CacheManager {
         match redis_c.get::<&str, Option<String>>("ROOT:A").unwrap() {
             Some(..) => {
                 // Already cached
-                info!(LOGGER, "Root servers are already cached!");
             },
 
             None => {
                 // Not cached
-                info!(LOGGER, "Caching root servers...");
                 let root_servers: IntoIter<RootServer> = fetch_parse_rs_list()
                     .await
                     .into_iter();
