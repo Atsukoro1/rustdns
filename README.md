@@ -34,7 +34,7 @@ In order to run this compile and run the resolver correctly, there are some tool
 Currently in development, this section will be filled out later
 
 ## Configuration 
-A `config.conf` file is used to configure this DNS server.
+A `config.toml` file is used to configure this DNS server. Documentation with information about the configuration of this resolver will be released soon.
 
 ## Contributing
 Your contributions are always welcome! Before you create any pull request, create an issue and discuss the problem you want to solve or an enchancement with the community. 
