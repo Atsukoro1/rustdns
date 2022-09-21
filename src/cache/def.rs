@@ -1,16 +1,16 @@
-use std::vec::IntoIter;
-use redis::{
-    Connection,
-    Commands,
-};
-use slog::o;
+use crate::{CONFIG, LOGGER};
 use tokio::sync::Mutex;
-use crate::CONFIG;
+use std::vec::IntoIter;
 use super::modules::{
     tld::fp_tlds, 
     rootserver::fetch_parse_rs_list, 
     rootserver::RootServer
 };
+use redis::{
+    Connection,
+    Commands,
+};
+use slog::info;
 
 pub struct CacheManager {
     pub redis_instance: Option<Mutex<Connection>>,
@@ -55,7 +55,7 @@ impl CMTrait for CacheManager {
     }
 
     fn connect(&mut self) -> Result<(), String> {
-        let connection = redis::Client::open(&*CONFIG.redis_addr)
+        let connection = redis::Client::open(&*CONFIG.cache.hostname)
             .unwrap()
             .get_connection();
 
@@ -84,10 +84,12 @@ impl CMTrait for CacheManager {
         match redis_c.get::<&str, Option<String>>("TLD:COM").unwrap() {
             Some(..) => {
                 // Already cached
+                info!(LOGGER, "TLDs are already cached!");
             },
 
             None => {
                 // Not cached
+                info!(LOGGER, "Caching TLDs...");
                 let tlds: IntoIter<String> = fp_tlds()
                     .await
                     .expect("Failed to fetch TLDs")
@@ -105,10 +107,12 @@ impl CMTrait for CacheManager {
         match redis_c.get::<&str, Option<String>>("ROOT:A").unwrap() {
             Some(..) => {
                 // Already cached
+                info!(LOGGER, "Root servers are already cached!");
             },
 
             None => {
                 // Not cached
+                info!(LOGGER, "Caching root servers!");
                 let root_servers: IntoIter<RootServer> = fetch_parse_rs_list()
                     .await
                     .into_iter();

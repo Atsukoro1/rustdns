@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 bit = "0.1.1"
 slog = "2.7.0"
+toml = "0.5.9"
 futures = "0.3.24"
 bitreader = "0.3.6"
 slog-term = "2.9.0"
@@ -14,7 +15,7 @@ reqwest = "0.11.11"
 slog-async = "2.7.0"
 lazy_static = "1.4.0"
 async-trait = "0.1.57"
-configparser = "3.0.2"
 enum_primitive = "0.1.1"
 tokio = { version = "1.21.1", features = ["full"] }
+serde = { version = "1.0.144", features = ["derive"] }
 redis = { version = "0.21.6", features = ["tokio-comp"] }

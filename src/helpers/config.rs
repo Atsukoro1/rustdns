@@ -1,56 +1,65 @@
-use configparser::ini::Ini;
+use serde::{
+    Serialize, 
+    Deserialize
+};
+use std::{fs::File, io::Read};
 
-pub enum LoggingType {
-    TERMINAL,
-    FILE
+#[derive(Serialize, Deserialize)]
+pub enum LogType {
+    TERMINAL = 1,
+    FILE = 2
 }
+
+#[derive(Serialize, Deserialize)]
 pub struct Config {
+    pub host: Host,
+    pub cache: Cache,
+    pub logging: Logging
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Host {
     pub hostname: String,
-    pub port: u16,
-    pub redis_addr: String,
-    pub log_type: Option<LoggingType>,
+    pub port: u16
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Cache {
+    pub hostname: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Logging {
     pub on: bool,
+    pub log_type: LogType,
+    pub file_path: Option<String>
 }
 
 #[derive(Debug)]
-pub struct ConfigError {
-    pub message: String,
-    pub category: String, 
-    pub field: String
+pub enum ConfigError {
+    TOMLERR(toml::de::Error),
+    FSERR(std::io::Error)
+}
+
+impl From<toml::de::Error> for ConfigError {
+    fn from(err: toml::de::Error) -> Self {
+        ConfigError::TOMLERR(err)
+    }
+}
+
+impl From<std::io::Error> for ConfigError {
+    fn from(err: std::io::Error) -> Self {
+        ConfigError::FSERR(err)
+    }
 }
 
 /// Load config from config.conf file located in root directory
 /// Returns config struct
 pub fn load_config() -> Result<Config, ConfigError> {
-    let mut config = Ini::new();
-    config.load(std::path::Path::new("./config.conf"))
-        .expect(
-            "Malformed config, try copying config from the
-            repo's readme or create a new issue on github."
-        );
+    let mut file = File::open("config.toml")?;
 
-    Ok(Config { 
-        redis_addr: config.get("cache", "redis_addr").unwrap(),
-        hostname: config.get("host", "hostname").unwrap(),
-        port: config.get("host", "port")
-            .unwrap()
-            .parse::<u16>()
-            .unwrap(),
-        on: config.get("logging", "on")
-            .unwrap()
-            .eq("yes")
-            .then(|| true)
-            .or_else(|| enum_primitive::Option::Some(false))
-            .unwrap(),
-        log_type: enum_primitive::Option::Some((|| {
-            let lt = config.get("logging", "type")
-                .unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
 
-            if lt == "file" {
-                LoggingType::FILE
-            } else {
-                LoggingType::TERMINAL
-            }
-        })())
-    })
+    Ok(toml::from_str::<Config>(&contents)?)
 } 

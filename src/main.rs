@@ -19,11 +19,12 @@ use std::net::{
     UdpSocket, 
     SocketAddr
 };
+use std::time::Duration;
 use slog::{
     o, 
     Drain, 
     info, 
-    crit
+    crit, warn
 };
 
 mod parser;
@@ -32,17 +33,6 @@ mod cache;
 
 lazy_static! {
     pub static ref LOGGER: slog::Logger = {
-        /* 
-            This will bind expect to this and display critical error using
-            slog crate before the program exits
-        */
-        std::panic::set_hook(Box::new(|info| {
-            if let Some(s) = info.payload().downcast_ref::<String>() {
-                crit!(LOGGER, "{}", s);
-                panic!();
-            }
-        }));
-
         let decorator = slog_term::TermDecorator::new()
             .stdout()
             .force_color()
@@ -60,12 +50,32 @@ lazy_static! {
     };
 
     pub static ref CONFIG: Config = {
-        helpers::config::load_config().unwrap()
+        let cfg: Config = match helpers::config::load_config() {
+            Ok(conf) => {
+                info!(LOGGER, "Succefully loaded config!");
+                conf
+            },
+
+            Err(err) => {
+                warn!(
+                    LOGGER, 
+                    "Something happened while loading config!";
+                    "Details" => format!("{:?}", err)
+                );
+
+                // This is done to prevent panic printing above the logger message
+                std::thread::sleep(Duration::from_millis(100));
+
+                panic!()
+            }
+        };
+
+        cfg
     };
 
     pub static ref SOCKET: UdpSocket = {
         let sckt = match UdpSocket::bind(
-            format!("{}:{}", CONFIG.hostname, CONFIG.port)
+            format!("{}:{}", CONFIG.host.hostname, CONFIG.host.port)
                 .as_str()
                 .parse::<SocketAddr>()
                 .unwrap()
@@ -74,7 +84,7 @@ lazy_static! {
                 info!(
                     LOGGER, 
                     "UDP socket is running!";
-                    "host" => format!("{}:{}", CONFIG.hostname, CONFIG.port)
+                    "host" => format!("{}:{}", CONFIG.host.hostname, CONFIG.host.port)
                 );
                 s
             },
@@ -111,9 +121,6 @@ fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
 async fn main() {
     let mut current_cm: MutexGuard<CacheManager> = CACHEMANAGER.lock()
         .await;
-
-    current_cm.connect()   
-        .expect("Failed to connect to cache manager");
 
     current_cm.load_resources()
         .await
