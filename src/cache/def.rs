@@ -127,7 +127,13 @@ impl CMTrait for CacheManager {
                             _ => "NS"
                         }.to_string(), 
                         item.to_str()
-                    );
+                    )
+                    .is_err()
+                    .then(|| {
+                        return Result::Err::<(), String>(
+                            String::from("Failed to cache one of the root servers!")
+                        );
+                    });
                 });
             }
         }

@@ -13,7 +13,9 @@ pub async fn fetch_parse_rs_list() -> Vec<RootServer> {
         .await
         .unwrap();
 
-    let remote_file = stream.simple_retr("named.cache").await.unwrap();
+    let remote_file = stream.simple_retr("named.cache")
+        .await
+        .unwrap();
 
     let mut split_f: Vec<String> = std::str::from_utf8(&remote_file.into_inner())
         .unwrap()
