@@ -40,7 +40,7 @@ pub trait CMTrait {
     /// 1. Top level domains -> TLD:<domain>
     /// 
     /// 2. Root servers -> ROOTS:<qtype> as a key and 
-    /// list of root servers separated by "empty space" in following 
+    /// list of root servers separated by "\r" character in following 
     /// format tld_ip/domain as value
     /// 
     /// Can return error in String format
@@ -126,7 +126,7 @@ impl CMTrait for CacheManager {
                             QuestionType::AAAA => "ROOTS:AAAA",
                             _ => "NS"
                         }.to_string(), 
-                        item.to_str() + " "
+                        item.to_str()
                     );
                 });
             }
