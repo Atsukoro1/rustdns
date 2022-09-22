@@ -11,8 +11,6 @@ use crate::parser::parse::{
     datagram_bytes
 };
 
-/// DNS datagram as descibed at https://datatracker.ietf.org/doc/html/rfc1035
-/// under the 4.1. Format section
 #[derive(Debug)]
 pub struct DNS {
     pub header: DNSHeader,

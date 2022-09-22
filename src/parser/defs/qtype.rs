@@ -1,15 +1,6 @@
 enum_from_primitive! {
     #[repr(u16)]
     #[derive(Debug)]
-    /// This list of DNS record types is an overview of resource records (RRs) 
-    /// permissible in zone files of the Domain Name System (DNS). It also contains pseudo-RRs. 
-    /// 
-    /// This list does not list records with name containing non-alphanumerical characters
-    /// These records are listed here and should be checked independently
-    /// * -> All cached records (255)
-    /// NSAP-PTR -> Not in current use by any notable application (23)
-    /// 
-    /// Described at https://en.wikipedia.org/wiki/List_of_DNS_record_types
     pub enum QuestionType {
         A = 1,
         NS = 2,
