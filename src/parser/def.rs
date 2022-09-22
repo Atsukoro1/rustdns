@@ -44,10 +44,7 @@ pub enum ErrorCode {
     /// policy reasons.  For example, a nameserver may not wish to provide the
     /// information to the particular requester, or a name server may not wish to perform
     /// a particular operation (e.g., zonetransfer) for particular data.
-    Refused,
-
-    /// Reserved for future use
-    FutureUse
+    Refused
 }
 
 enum_from_primitive! {
@@ -303,7 +300,7 @@ pub trait Construct {
     fn from(bytes: &[u8]) -> Result<DNS, ErrorCode>;
 
     /// Convert the struct into bytes
-    fn bytes(self) -> Vec<u8>;
+    fn bytes(self) -> Result<Vec<u8>, ErrorCode>;
 }
 
 impl Construct for DNS {
@@ -334,7 +331,7 @@ impl Construct for DNS {
         parse_datagram(bytes)
     }
 
-    fn bytes(self) -> Vec<u8> {
+    fn bytes(self) -> Result<Vec<u8>, ErrorCode> {
         datagram_bytes(self)
     }
 }

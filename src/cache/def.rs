@@ -105,7 +105,7 @@ impl CMTrait for CacheManager {
             }
         }
 
-        match redis_c.get::<&str, Option<String>>("ROOT:A").unwrap() {
+        match redis_c.get::<&str, Option<String>>("ROOTS:NS").unwrap() {
             Some(..) => {
                 // Already cached
                 info!(LOGGER, "Root servers are already cached!");

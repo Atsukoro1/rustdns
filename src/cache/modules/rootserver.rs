@@ -66,7 +66,6 @@ pub trait RootServerT {
 
 impl RootServerT for RootServer {
     fn from_str_vec(src: Vec<&str>) -> RootServer {
-        println!("{:?}", src);
         RootServer { 
             qtype: (|| {
                 match src[2] {

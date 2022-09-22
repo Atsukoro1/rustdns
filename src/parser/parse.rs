@@ -20,7 +20,7 @@ use crate::{
 };
 
 /// Convert DNS struct into raw bytes
-pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
+pub fn datagram_bytes(datagram: DNS) -> Result<Vec<u8>, ErrorCode> {
     // Pre-fill first 12 bytes for the header
     let mut bytes: Vec<u8> = vec![];
 
@@ -150,7 +150,7 @@ pub fn datagram_bytes(datagram: DNS) -> Vec<u8> {
         offset += 1;
     };
 
-    bytes
+    Ok(bytes)
 }
 
 /// Create a DNS struct from raw bytes
@@ -187,7 +187,9 @@ pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ErrorCode> {
         0 => OpCode::Query,
         1 => OpCode::IQuery,
         2 => OpCode::Status,
-        _ => OpCode::FutureUse
+        _ => return Result::Err::<DNS, ErrorCode>(
+            ErrorCode::FormatError
+        )
     };
 
     result.authoritative = bit_assign::<bool>(
@@ -223,7 +225,11 @@ pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ErrorCode> {
         0x3 => ErrorCode::NameError,
         0x4 => ErrorCode::NotImplemented,
         0x5 => ErrorCode::Refused,
-        _ => ErrorCode::FutureUse
+        _ => {
+            return Result::Err::<DNS, ErrorCode>(
+                ErrorCode::FormatError
+            );
+        }
     };
 
     result.question_count = reader.read_u16(16).unwrap();
