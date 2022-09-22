@@ -1,4 +1,9 @@
-use crate::{CONFIG, LOGGER, cache::modules::rootserver::RootServerT, parser::def::QuestionType};
+use crate::{
+    CONFIG, 
+    LOGGER, 
+    cache::modules::rootserver::RootServerT,
+    parser::defs::qtype::QuestionType
+};
 use tokio::sync::Mutex;
 use std::vec::IntoIter;
 use super::modules::{

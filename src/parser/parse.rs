@@ -1,4 +1,3 @@
-use super::def::DNSResourceFormat;
 use enum_primitive::FromPrimitive;
 use bitreader::BitReader;
 use bit::BitIndex;
@@ -7,20 +6,21 @@ use crate::{
         convert_u16_to_two_u8s,
         bit_assign, push_byte_vec
     },
-    parser::def::{
-        DNS,
-        DNSHeader,
-        OpCode,
-        QuestionClass,
-        QuestionType,
-        Type,
-        ErrorCode,
-        DNSQuestion
+    parser::defs::{
+        dns::DNS,
+        header::DNSHeader,
+        opcode::OpCode,
+        qclass::QuestionClass,
+        qtype::QuestionType,
+        r#type::Type,
+        resource::DNSResourceFormat,
+        rcode::ResponseCode,
+        question::DNSQuestion
     }
 };
 
 /// Convert DNS struct into raw bytes
-pub fn datagram_bytes(datagram: DNS) -> Result<Vec<u8>, ErrorCode> {
+pub fn datagram_bytes(datagram: DNS) -> Result<Vec<u8>, ResponseCode> {
     // Pre-fill first 12 bytes for the header
     let mut bytes: Vec<u8> = vec![];
 
@@ -77,12 +77,12 @@ pub fn datagram_bytes(datagram: DNS) -> Result<Vec<u8>, ErrorCode> {
 
     // Skipped 3 bits because of the section that will be used in future
     let rcode_bits: u8 = match datagram.header.error_code {
-        ErrorCode::NoError => 0x0,
-        ErrorCode::FormatError => 0x1,
-        ErrorCode::ServerFailure => 0x2,
-        ErrorCode::NameError => 0x3,
-        ErrorCode::NotImplemented => 0x4,
-        ErrorCode::Refused => 0x5,
+        ResponseCode::NoError => 0x0,
+        ResponseCode::FormatError => 0x1,
+        ResponseCode::ServerFailure => 0x2,
+        ResponseCode::NameError => 0x3,
+        ResponseCode::NotImplemented => 0x4,
+        ResponseCode::Refused => 0x5,
         // Future use
         _ => 0x0
     };
@@ -154,7 +154,7 @@ pub fn datagram_bytes(datagram: DNS) -> Result<Vec<u8>, ErrorCode> {
 }
 
 /// Create a DNS struct from raw bytes
-pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ErrorCode> {
+pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ResponseCode> {
     let mut reader = BitReader::new(bytes);
     let mut result = DNSHeader {
         id: 0,
@@ -164,7 +164,7 @@ pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ErrorCode> {
         truncated: false,
         recursion_desired: false,
         recursion_available: false,
-        error_code: ErrorCode::NotImplemented,
+        error_code: ResponseCode::NotImplemented,
         question_count: 0,
         answer_count: 0,
         nameserver_count: 0,
@@ -187,8 +187,8 @@ pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ErrorCode> {
         0 => OpCode::Query,
         1 => OpCode::IQuery,
         2 => OpCode::Status,
-        _ => return Result::Err::<DNS, ErrorCode>(
-            ErrorCode::FormatError
+        _ => return Result::Err::<DNS, ResponseCode>(
+            ResponseCode::FormatError
         )
     };
 
@@ -219,15 +219,15 @@ pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ErrorCode> {
     reader.skip(3).unwrap();
 
     result.error_code = match reader.read_u8(4).unwrap() {
-        0x0 => ErrorCode::NoError,
-        0x1 => ErrorCode::FormatError,
-        0x2 => ErrorCode::ServerFailure,
-        0x3 => ErrorCode::NameError,
-        0x4 => ErrorCode::NotImplemented,
-        0x5 => ErrorCode::Refused,
+        0x0 => ResponseCode::NoError,
+        0x1 => ResponseCode::FormatError,
+        0x2 => ResponseCode::ServerFailure,
+        0x3 => ResponseCode::NameError,
+        0x4 => ResponseCode::NotImplemented,
+        0x5 => ResponseCode::Refused,
         _ => {
-            return Result::Err::<DNS, ErrorCode>(
-                ErrorCode::FormatError
+            return Result::Err::<DNS, ResponseCode>(
+                ResponseCode::FormatError
             );
         }
     };

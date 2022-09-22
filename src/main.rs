@@ -111,7 +111,7 @@ lazy_static! {
 }
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
-    let datagram: parser::def::DNS = <parser::def::DNS as parser::def::Construct>::from(bytes)
+    let datagram: parser::defs::dns::DNS = <parser::defs::dns::DNS as parser::defs::dns::Construct>::from(bytes)
         .unwrap();
 
     println!("{:?}", datagram);
