@@ -123,7 +123,7 @@ impl CMTrait for CacheManager {
                         match item.qtype {
                             QuestionType::NS => "ROOTS:NS",
                             QuestionType::A => "ROOTS:A",
-                            QuestionType::AAAA => "ROOTS:AAAA",
+                            QuestionType::AAAA  => "ROOTS:AAAA",
                             _ => "NS"
                         }.to_string(), 
                         item.to_str()
