@@ -1,6 +1,6 @@
-use async_ftp::FtpStream;
 use crate::parser::def::QuestionType;
-use std::net::{SocketAddr, IpAddr};
+use async_ftp::FtpStream;
+use std::net::IpAddr;
 
 pub async fn fetch_parse_rs_list() -> Vec<RootServer> {
     let mut stream = FtpStream::connect("FTP.INTERNIC.NET:21")

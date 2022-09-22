@@ -1,4 +1,4 @@
-use crate::{CONFIG, LOGGER, cache::modules::rootserver::RootServerT};
+use crate::{CONFIG, LOGGER, cache::modules::rootserver::RootServerT, parser::def::QuestionType};
 use tokio::sync::Mutex;
 use std::vec::IntoIter;
 use super::modules::{
@@ -39,8 +39,9 @@ pub trait CMTrait {
     /// 
     /// 1. Top level domains -> TLD:<domain>
     /// 
-    /// 2. Root servers -> ROOT_<qtype> as a key and 
-    /// list of root servers separated by "," in following format tld_ip/domain as value
+    /// 2. Root servers -> ROOTS:<qtype> as a key and 
+    /// list of root servers separated by "empty space" in following 
+    /// format tld_ip/domain as value
     /// 
     /// Can return error in String format
     async fn load_resources(&mut self) -> Result<(), String>;
@@ -118,7 +119,15 @@ impl CMTrait for CacheManager {
                     .into_iter();
 
                 root_servers.for_each(|item: RootServer| {
-                    item.to_str();
+                    redis_c.append::<String, String, String>(
+                        match item.qtype {
+                            QuestionType::NS => "ROOTS:NS",
+                            QuestionType::A => "ROOTS:A",
+                            QuestionType::AAAA => "ROOTS:AAAA",
+                            _ => "NS"
+                        }.to_string(), 
+                        item.to_str() + " "
+                    );
                 });
             }
         }
