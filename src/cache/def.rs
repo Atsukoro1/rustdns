@@ -2,7 +2,7 @@ use crate::{
     CONFIG, 
     LOGGER, 
     cache::modules::rootserver::RootServerT,
-    parser::defs::qtype::QuestionType
+    parser::qtype::QuestionType
 };
 use tokio::sync::Mutex;
 use std::vec::IntoIter;

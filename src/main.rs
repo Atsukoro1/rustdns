@@ -6,6 +6,7 @@ extern crate slog;
 extern crate bit;
 
 use crate::helpers::config::Config;
+use crate::parser::dns::DNS;
 use lazy_static::lazy_static;
 use crate::cache::def::{
     CacheManager, CMTrait
@@ -111,10 +112,10 @@ lazy_static! {
 }
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
-    let datagram: parser::defs::dns::DNS = <parser::defs::dns::DNS as parser::defs::dns::Construct>::from(bytes)
+    let datagram: parser::dns::DNS = DNS::from(bytes)
         .unwrap();
 
-    println!("{:?}", datagram);
+    println!("{:?}", datagram.bytes().unwrap());
 }
 
 #[tokio::main]

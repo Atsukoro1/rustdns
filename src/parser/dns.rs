@@ -1,3 +1,4 @@
+use bitreader::BitReader;
 use super::{
     header::DNSHeader, 
     question::DNSQuestion, 
@@ -5,10 +6,6 @@ use super::{
     rcode::ResponseCode, 
     opcode::OpCode, 
     r#type::Type
-};
-use crate::parser::parse::{
-    parse_datagram,
-    datagram_bytes
 };
 
 #[derive(Debug)]
@@ -20,22 +17,8 @@ pub struct DNS {
     pub additional: Option<DNSResourceFormat>
 }
 
-pub trait Construct {
-    fn new() -> DNS;
-    fn from(bytes: &[u8]) -> Result<DNS, ResponseCode>;
-    fn bytes(self) -> Result<Vec<u8>, ResponseCode>;
-}
-
-impl Construct for DNS {
-    fn from(bytes: &[u8]) -> Result<DNS, ResponseCode> {
-        parse_datagram(bytes)
-    }
-
-    fn bytes(self) -> Result<Vec<u8>, ResponseCode> {
-        datagram_bytes(self)
-    }
-
-    fn new() -> DNS {
+impl DNS {
+    pub fn _new() -> DNS {
         DNS { 
             header: DNSHeader { 
                 id: 0, 
@@ -56,5 +39,35 @@ impl Construct for DNS {
             authority: None,
             additional: None
         }
+    }
+
+    pub fn from(bytes: &[u8]) -> Result<DNS, ResponseCode> {
+        let mut reader = BitReader::new(bytes);
+        let result = DNSHeader::try_from(&mut reader)
+            .unwrap();
+
+        let answer: Option<DNSResourceFormat> = None;
+        let authority: Option<DNSResourceFormat> = None;
+        let additional: Option<DNSResourceFormat> = None;
+
+        let questions = DNSQuestion::try_from(&mut reader, result.question_count)
+            .unwrap();
+
+        Ok(DNS {
+            header: result,
+            questions: questions,
+            answer: answer,
+            authority: authority,
+            additional: additional
+        })
+    }
+
+    pub fn bytes(self) -> Result<Vec<u8>, ResponseCode> {
+        let mut bytes: Vec<u8> = vec![];
+
+        DNSHeader::bytes(&mut bytes, &self);
+        DNSQuestion::bytes(&mut bytes, &self);
+
+        Ok(bytes)
     }
 }

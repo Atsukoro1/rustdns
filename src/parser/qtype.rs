@@ -1,6 +1,6 @@
 enum_from_primitive! {
     #[repr(u16)]
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy)]
     pub enum QuestionType {
         A = 1,
         NS = 2,
