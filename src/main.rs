@@ -15,7 +15,8 @@ use tokio::sync::{
     MutexGuard, 
     Mutex
 };
-use std::thread;
+use std::io::Write;
+use std::{thread, io};
 use std::net::{
     UdpSocket, 
     SocketAddr
@@ -112,10 +113,27 @@ lazy_static! {
 }
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
-    let datagram: parser::dns::DNS = DNS::from(bytes)
-        .unwrap();
+    println!("{:?}", DNS::from(&*bytes).unwrap());
+    
+    bytes.into_iter()
+        .for_each(|bits| {
+            print!("{:#010b}", bits);
+            print!(", ");
+        });
 
-    println!("{:?}", datagram.bytes().unwrap());
+    println!("");
+    println!("");
+
+    DNS::from(&*bytes).unwrap()
+        .bytes()
+        .unwrap()
+        .into_iter()
+        .for_each(|bits| {
+            print!("{:#010b}", bits);
+            io::stdout().flush().unwrap();
+            print!(", ");
+            io::stdout().flush().unwrap();
+        });
 }
 
 #[tokio::main]

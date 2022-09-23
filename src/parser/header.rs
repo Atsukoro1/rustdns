@@ -109,11 +109,8 @@ impl DNSHeader {
         );
     
         // Opcode
-        let opc_bits: u8 = match datagram.header.op_code {
-            OpCode::Query => 0x0,
-            OpCode::IQuery => 0x1,
-            OpCode::Status => 0x2
-        };
+        let opc_bits: u8 = datagram.header.op_code.try_into()
+            .unwrap();
         bytes[2].set_bit_range(1..4, opc_bits);
     
         // Authoritative Answer
@@ -142,14 +139,8 @@ impl DNSHeader {
         );
     
         // Skipped 3 bits because of the section that will be used in future
-        let rcode_bits: u8 = match datagram.header.error_code {
-            ResponseCode::NoError => 0x0,
-            ResponseCode::FormatError => 0x1,
-            ResponseCode::ServerFailure => 0x2,
-            ResponseCode::NameError => 0x3,
-            ResponseCode::NotImplemented => 0x4,
-            ResponseCode::Refused => 0x5,
-        };
+        let rcode_bits: u8 = datagram.header.error_code.try_into()
+            .unwrap();
         bytes[3].set_bit_range(4..7, rcode_bits);
     
         push_byte_vec(bytes, 2, 0x0);
