@@ -15,7 +15,7 @@
 ## Expected features
 - Blocking annoying third party `ad/tracking domains`
 - Fast caching using Redis
-- Fully configurable with `.conf` file
+- Fully configurable using `config.toml` file
 - Fast and memory safe
 
 ## Usage
