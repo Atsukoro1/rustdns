@@ -1,4 +1,4 @@
-use crate::parser::defs::qtype::QuestionType;
+use crate::parser::qtype::QuestionType;
 use async_ftp::FtpStream;
 use std::net::IpAddr;
 
