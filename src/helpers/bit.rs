@@ -1,35 +1,55 @@
-use core::fmt::Debug;
-use std::any::Any;
-use bitreader::BitReader;
-
-/// Return value based on if bit is zero or one
-pub fn bit_assign<'a, T: Any + Debug>(
-    is_zero: T, 
-    is_one: T,
-    reader: &mut BitReader
-) -> T {
-    match reader.read_u8(1).unwrap() {
-        0 => {
-            is_zero
-        }, 
-
-        1 => {
-            is_one
-        },
-
-        _ => {
-            panic!("Not valid bit!");
+#[macro_export]
+/// Assign given value based on if the provided unsigned integer 
+/// is one or zero
+/// 
+/// ### Panics
+/// - If the integer is not one or zero
+macro_rules! bit_assign {
+    ($is_zero:expr, $is_one:expr, $reader:expr) => {
+        match $reader.read_u8(1).unwrap() {
+            0 => {
+                $is_zero
+            }, 
+    
+            1 => {
+                $is_one
+            },
+    
+            _ => {
+                panic!("Not valid bit!");
+            }
         }
-    }
+    };
 }
 
-/// Convert one unsigned 16 bit integer into two unsigned 8 bit integers
+/// ### Simple any-unsigned integer to 8-bit converting macro
 /// 
-/// Author - https://stackoverflow.com/users/1021920/hellow
+/// This macro is made for converting unsigned 32 or 16 bit 
+/// integers to array of unsigned 8-bit integers
 /// 
-/// Returns an array with two 8-bit integers
-pub fn convert_u16_to_two_u8s(integer: u16) -> [u8; 2] {
-    [(integer >> 8) as u8, integer as u8]
+/// Example
+/// ```rust
+/// let bytes: [u8; 2] = convert_u16_to_two_u8s!(100, u16);
+/// // Use these bytes
+/// bytes[0];
+/// bytes[1];
+/// ```
+/// 
+/// Returns (data type / 8) unsigned 8-bit integers
+#[macro_export]
+macro_rules! convert_u16_to_two_u8s {
+    ($num:expr, u16)=>{
+        [($num >> 8) as u8, $num as u8]
+    };
+
+    ($num:expr, u32)=>{
+        [
+            ($num >> 24) as u8,
+            ($num >> 16) as u8,
+            ($num >> 8) as u8,
+            $num as u8
+        ]
+    }
 }
 
 /// Push variables to vec multiple times

@@ -1,7 +1,13 @@
 use bit::BitIndex;
 use bitreader::BitReader;
 use enum_primitive::FromPrimitive;
-use crate::helpers::bit::{bit_assign, push_byte_vec, convert_u16_to_two_u8s};
+use crate::{
+    convert_u16_to_two_u8s, 
+    bit_assign,
+    helpers::bit::{
+        push_byte_vec
+    }
+};
 
 use super::{
     r#type::Type, 
@@ -26,25 +32,29 @@ pub struct DNSHeader {
 }
 
 impl DNSHeader {
-    pub fn try_from(reader: &mut BitReader) -> Result<Self, ResponseCode> {
-        let mut result = DNSHeader {
-            id: 0,
-            qr: Type::Query,
-            op_code: OpCode::IQuery,
-            authoritative: false,
-            truncated: false,
-            recursion_desired: false,
-            recursion_available: false,
-            error_code: ResponseCode::NotImplemented,
-            question_count: 0,
-            answer_count: 0,
-            nameserver_count: 0,
+    pub fn new() -> Self {
+        DNSHeader { 
+            id: 1, 
+            qr: Type::Response, 
+            op_code: OpCode::Query,
+            authoritative: false, 
+            truncated: false, 
+            recursion_desired: true, 
+            recursion_available: false, 
+            error_code: ResponseCode::NoError, 
+            question_count: 0, 
+            answer_count: 0, 
+            nameserver_count: 0, 
             resource_count: 0
-        };
+        }
+    }
+
+    pub fn try_from(reader: &mut BitReader) -> Result<Self, ResponseCode> {
+        let mut result = DNSHeader::new();
 
         result.id = reader.read_u16(16).unwrap();
 
-        result.qr = bit_assign::<Type>(
+        result.qr = bit_assign!(
             Type::Query, 
             Type::Response,
             reader
@@ -53,25 +63,25 @@ impl DNSHeader {
         result.op_code = OpCode::from_u8(reader.read_u8(4).unwrap())
             .unwrap();
 
-        result.authoritative = bit_assign::<bool>(
+        result.authoritative = bit_assign!(
             false, 
             true, 
             reader
         );
 
-        result.truncated = bit_assign::<bool>(
+        result.truncated = bit_assign!(
             false, 
             true, 
             reader
         );
 
-        result.recursion_desired = bit_assign::<bool>(
+        result.recursion_desired = bit_assign!(
             false, 
             true, 
             reader
         );
 
-        result.recursion_available = bit_assign::<bool>(
+        result.recursion_available = bit_assign!(
             false, 
             true, 
             reader
@@ -93,7 +103,7 @@ impl DNSHeader {
 
     pub fn bytes(bytes: &mut Vec<u8>, datagram: &DNS) {
         push_byte_vec(bytes, 2, 0x0);
-        let id_u8: [u8; 2] = convert_u16_to_two_u8s(datagram.header.id);
+        let id_u8: [u8; 2] = convert_u16_to_two_u8s!(datagram.header.id, u16);
         bytes[0] = id_u8[0];
         bytes[1] = id_u8[1];
         
@@ -144,22 +154,22 @@ impl DNSHeader {
         bytes[3].set_bit_range(0..3, rcode_bits);
     
         push_byte_vec(bytes, 2, 0x0);
-        let q_bits: [u8; 2] = convert_u16_to_two_u8s(datagram.header.question_count);
+        let q_bits: [u8; 2] = convert_u16_to_two_u8s!(datagram.header.question_count, u16);
         bytes[4].set_bit_range(0..7, q_bits[0]);
         bytes[5].set_bit_range(0..7, q_bits[1]);
     
         push_byte_vec(bytes, 2, 0x0);
-        let an_bits: [u8; 2] = convert_u16_to_two_u8s(datagram.header.answer_count);
+        let an_bits: [u8; 2] = convert_u16_to_two_u8s!(datagram.header.answer_count, u16);
         bytes[6].set_bit_range(0..7, an_bits[0]);
         bytes[7].set_bit_range(0..7, an_bits[1]);
     
         push_byte_vec(bytes, 2, 0x0);
-        let ns_bits: [u8; 2] = convert_u16_to_two_u8s(datagram.header.nameserver_count);
+        let ns_bits: [u8; 2] = convert_u16_to_two_u8s!(datagram.header.nameserver_count, u16);
         bytes[8].set_bit_range(0..7, ns_bits[0]);
         bytes[9].set_bit_range(0..7, ns_bits[1]);
     
         push_byte_vec(bytes, 2, 0x0);
-        let ar_bits: [u8; 2] = convert_u16_to_two_u8s(datagram.header.resource_count);
+        let ar_bits: [u8; 2] = convert_u16_to_two_u8s!(datagram.header.resource_count, u16);
         bytes[10].set_bit_range(0..7, ar_bits[0]);
         bytes[11].set_bit_range(0..7, ar_bits[1]);
     }

@@ -18,8 +18,7 @@ use tokio::sync::{
     MutexGuard, 
     Mutex
 };
-use std::io::Write;
-use std::{thread, io};
+use std::thread;
 use std::net::{
     UdpSocket, 
     SocketAddr
@@ -117,6 +116,7 @@ lazy_static! {
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
     let mut datagram = DNS::from(&*bytes).unwrap();
+    println!("{:?}", datagram);
 
     datagram.header.error_code = ResponseCode::FormatError;
     datagram.header.qr = Type::Response;

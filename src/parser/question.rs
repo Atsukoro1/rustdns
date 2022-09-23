@@ -1,6 +1,6 @@
 use bitreader::BitReader;
 use enum_primitive::FromPrimitive;
-use crate::helpers::bit::{push_byte_vec, convert_u16_to_two_u8s};
+use crate::{helpers::bit::{push_byte_vec}, convert_u16_to_two_u8s};
 
 use super::{
     qclass::QuestionClass,
@@ -91,14 +91,14 @@ impl DNSQuestion {
             bytes[offset as usize] = 0x00; 
             offset += 1;
 
-            let qtype_bytes: [u8; 2] = convert_u16_to_two_u8s(question.qtype as u16);
+            let qtype_bytes: [u8; 2] = convert_u16_to_two_u8s!(question.qtype as u16, u16);
 
             bytes[offset as usize] = qtype_bytes[0];
             offset += 1;
             bytes[offset as usize] = qtype_bytes[1];
             offset += 1;
 
-            let qclass_bytes: [u8; 2] = convert_u16_to_two_u8s(question.class as u16);
+            let qclass_bytes: [u8; 2] = convert_u16_to_two_u8s!(question.class as u16, u16);
 
             bytes[offset as usize] = qclass_bytes[0];
             offset += 1;
