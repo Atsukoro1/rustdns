@@ -81,7 +81,7 @@ pub fn datagram_bytes(datagram: DNS) -> Result<Vec<u8>, ResponseCode> {
         ResponseCode::ServerFailure => 0x2,
         ResponseCode::NameError => 0x3,
         ResponseCode::NotImplemented => 0x4,
-        ResponseCode::Refused => 0x5
+        ResponseCode::Refused => 0x5,
     };
     bytes[3].set_bit_range(4..7, rcode_bits);
 
@@ -180,14 +180,8 @@ pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ResponseCode> {
         &mut reader
     );
 
-    result.op_code = match reader.read_u8(4).unwrap() {
-        0 => OpCode::Query,
-        1 => OpCode::IQuery,
-        2 => OpCode::Status,
-        _ => return Result::Err::<DNS, ResponseCode>(
-            ResponseCode::FormatError
-        )
-    };
+    result.op_code = OpCode::from_u8(reader.read_u8(4).unwrap())
+        .unwrap();
 
     result.authoritative = bit_assign::<bool>(
         false, 
@@ -215,19 +209,9 @@ pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ResponseCode> {
 
     reader.skip(3).unwrap();
 
-    result.error_code = match reader.read_u8(4).unwrap() {
-        0x0 => ResponseCode::NoError,
-        0x1 => ResponseCode::FormatError,
-        0x2 => ResponseCode::ServerFailure,
-        0x3 => ResponseCode::NameError,
-        0x4 => ResponseCode::NotImplemented,
-        0x5 => ResponseCode::Refused,
-        _ => {
-            return Result::Err::<DNS, ResponseCode>(
-                ResponseCode::FormatError
-            );
-        }
-    };
+    result.error_code = ResponseCode::from_u8(
+        reader.read_u8(4).unwrap()
+    ).unwrap();
 
     result.question_count = reader.read_u16(16).unwrap();
     result.answer_count = reader.read_u16(16).unwrap();
