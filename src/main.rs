@@ -114,6 +114,26 @@ lazy_static! {
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
     println!("{:?}", DNS::from(&*bytes).unwrap());
+        
+    bytes.into_iter()
+        .for_each(|bits| {
+            print!("{:#010b}", bits);
+            print!(", ");
+        });
+
+    println!("");
+    println!("");
+
+    DNS::from(&*bytes).unwrap()
+        .bytes()
+        .unwrap()
+        .into_iter()
+        .for_each(|bits| {
+            print!("{:#010b}", bits);
+            io::stdout().flush().unwrap();
+            print!(", ");
+            io::stdout().flush().unwrap();
+        });
 }
 
 #[tokio::main]

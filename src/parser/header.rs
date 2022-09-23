@@ -100,7 +100,7 @@ impl DNSHeader {
         // Question or response
         push_byte_vec(bytes, 1, 0x0);
         bytes[2].set_bit(
-            0, 
+            7, 
             if datagram.header.qr == Type::Query {
                 false
             } else {
@@ -111,23 +111,23 @@ impl DNSHeader {
         // Opcode
         let opc_bits: u8 = datagram.header.op_code.try_into()
             .unwrap();
-        bytes[2].set_bit_range(1..4, opc_bits);
+        bytes[2].set_bit_range(3..6, opc_bits);
     
         // Authoritative Answer
         bytes[2].set_bit(
-            5, 
+            2, 
             datagram.header.authoritative
         );
     
         // If the message was truncated
         bytes[2].set_bit(
-            6, 
+            1, 
             datagram.header.truncated
         );
     
         // If recursion will be used
         bytes[2].set_bit(
-            7, 
+            0, 
             datagram.header.recursion_desired
         );
     
