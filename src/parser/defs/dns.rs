@@ -40,7 +40,7 @@ impl Construct for DNS {
             header: DNSHeader { 
                 id: 0, 
                 qr: Type::Query, 
-                op_code: OpCode::FutureUse, 
+                op_code: OpCode::Status, 
                 authoritative: false, 
                 truncated: false, 
                 recursion_desired: false, 

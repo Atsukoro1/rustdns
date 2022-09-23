@@ -45,8 +45,7 @@ pub fn datagram_bytes(datagram: DNS) -> Result<Vec<u8>, ResponseCode> {
     let opc_bits: u8 = match datagram.header.op_code {
         OpCode::Query => 0x0,
         OpCode::IQuery => 0x1,
-        OpCode::Status => 0x2,
-        OpCode::FutureUse => 0x3
+        OpCode::Status => 0x2
     };
     bytes[2].set_bit_range(1..4, opc_bits);
 
@@ -82,9 +81,7 @@ pub fn datagram_bytes(datagram: DNS) -> Result<Vec<u8>, ResponseCode> {
         ResponseCode::ServerFailure => 0x2,
         ResponseCode::NameError => 0x3,
         ResponseCode::NotImplemented => 0x4,
-        ResponseCode::Refused => 0x5,
-        // Future use
-        _ => 0x0
+        ResponseCode::Refused => 0x5
     };
     bytes[3].set_bit_range(4..7, rcode_bits);
 
@@ -159,7 +156,7 @@ pub fn parse_datagram(bytes: &[u8]) -> Result<DNS, ResponseCode> {
     let mut result = DNSHeader {
         id: 0,
         qr: Type::Query,
-        op_code: OpCode::FutureUse,
+        op_code: OpCode::IQuery,
         authoritative: false,
         truncated: false,
         recursion_desired: false,
