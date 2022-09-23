@@ -7,7 +7,10 @@ extern crate bit;
 
 use crate::helpers::config::Config;
 use crate::parser::dns::DNS;
+use crate::parser::opcode::OpCode;
 use lazy_static::lazy_static;
+use parser::r#type::Type;
+use parser::rcode::ResponseCode;
 use crate::cache::def::{
     CacheManager, CMTrait
 };
@@ -113,27 +116,14 @@ lazy_static! {
 }
 
 fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
-    println!("{:?}", DNS::from(&*bytes).unwrap());
-        
-    bytes.into_iter()
-        .for_each(|bits| {
-            print!("{:#010b}", bits);
-            print!(", ");
-        });
+    let mut datagram = DNS::from(&*bytes).unwrap();
 
-    println!("");
-    println!("");
+    datagram.header.error_code = ResponseCode::FormatError;
+    datagram.header.qr = Type::Response;
+    datagram.header.op_code = OpCode::Query;
+    datagram.header.authoritative = true;
 
-    DNS::from(&*bytes).unwrap()
-        .bytes()
-        .unwrap()
-        .into_iter()
-        .for_each(|bits| {
-            print!("{:#010b}", bits);
-            io::stdout().flush().unwrap();
-            print!(", ");
-            io::stdout().flush().unwrap();
-        });
+    let dg = DNS::from(&*datagram.bytes().unwrap());
 }
 
 #[tokio::main]

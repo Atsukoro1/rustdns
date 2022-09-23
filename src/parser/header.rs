@@ -134,14 +134,14 @@ impl DNSHeader {
         // If recursion is available
         push_byte_vec(bytes, 1, 0x0);
         bytes[3].set_bit(
-            0, 
+            7, 
             datagram.header.recursion_available
         );
     
         // Skipped 3 bits because of the section that will be used in future
         let rcode_bits: u8 = datagram.header.error_code.try_into()
             .unwrap();
-        bytes[3].set_bit_range(4..7, rcode_bits);
+        bytes[3].set_bit_range(0..3, rcode_bits);
     
         push_byte_vec(bytes, 2, 0x0);
         let q_bits: [u8; 2] = convert_u16_to_two_u8s(datagram.header.question_count);
