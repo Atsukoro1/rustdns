@@ -12,7 +12,7 @@ impl TryInto<u8> for OpCode {
 
     fn try_into(self) -> Result<u8, Self::Error> {
         let res = match self {
-            OpCode::Query => 0x3,
+            OpCode::Query => 0x0,
             OpCode::IQuery => 0x1,
             OpCode::Status => 0x2
         };
