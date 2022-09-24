@@ -1,6 +1,9 @@
 use bitreader::BitReader;
 use enum_primitive::FromPrimitive;
-use crate::{helpers::bit::{push_byte_vec}, convert_u16_to_two_u8s};
+use crate::{
+    convert_u16_to_two_u8s, 
+    push_byte_vec
+};
 
 use super::{
     qclass::QuestionClass,
@@ -70,7 +73,7 @@ impl DNSQuestion {
                 .collect::<Vec<&str>>();
 
             let complete_length = question.name.len() + 6;
-            push_byte_vec(bytes, complete_length as u8, 0x0);
+            push_byte_vec!(bytes, complete_length as u8, 0x0);
 
             // First write the initial length byte and then the content
             for name in name_parts {

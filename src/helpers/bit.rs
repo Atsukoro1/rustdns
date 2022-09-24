@@ -54,8 +54,11 @@ macro_rules! convert_u16_to_two_u8s {
 
 /// Push variables to vec multiple times
 /// Writes values straight into Vector instead of returning it
-pub fn push_byte_vec(vec: &mut Vec<u8>, repeat: u8, item: u8) {
-    for _ in 0..repeat {
-        vec.push(item);
+#[macro_export]
+macro_rules! push_byte_vec {
+    ($vec:expr, $repeat:expr, $item:expr) => {
+        for _ in 0..$repeat {
+            $vec.push($item);
+        }
     };
 }
