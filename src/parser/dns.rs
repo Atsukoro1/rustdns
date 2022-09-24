@@ -12,9 +12,9 @@ use super::{
 pub struct DNS {
     pub header: DNSHeader,
     pub questions: Vec<DNSQuestion>,
-    pub answer: Option<DNSResourceFormat>,
-    pub authority: Option<DNSResourceFormat>,
-    pub additional: Option<DNSResourceFormat>
+    pub answer: Option<Vec<DNSResourceFormat>>,
+    pub authority: Option<Vec<DNSResourceFormat>>,
+    pub additional: Option<Vec<DNSResourceFormat>>
 }
 
 impl DNS {
@@ -46,9 +46,9 @@ impl DNS {
         let result = DNSHeader::try_from(&mut reader)
             .unwrap();
 
-        let answer: Option<DNSResourceFormat> = None;
-        let authority: Option<DNSResourceFormat> = None;
-        let additional: Option<DNSResourceFormat> = None;
+        let answer: Option<Vec<DNSResourceFormat>> = None;
+        let authority: Option<Vec<DNSResourceFormat>> = None;
+        let additional: Option<Vec<DNSResourceFormat>> = None;
 
         let questions = DNSQuestion::try_from(&mut reader, result.question_count)
             .unwrap();

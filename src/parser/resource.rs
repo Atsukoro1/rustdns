@@ -3,7 +3,7 @@ use super::{
     qtype::QuestionType
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DNSResourceFormat {
     pub name: String,
     pub rr_type: QuestionType,
