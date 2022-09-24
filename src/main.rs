@@ -18,10 +18,9 @@ use tokio::sync::{
     MutexGuard, 
     Mutex
 };
-use std::thread;
 use std::net::{
-    UdpSocket, 
-    SocketAddr
+    SocketAddr, 
+    UdpSocket
 };
 use std::time::Duration;
 use slog::{
@@ -140,7 +139,7 @@ async fn main() {
 
         match SOCKET.recv_from(&mut buf) {
             Ok((amt, src)) => {
-                thread::spawn(move || {
+                tokio::task::spawn(async move {
                     handle_datagram(
                         &buf[0..amt],
                         src
