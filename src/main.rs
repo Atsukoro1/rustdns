@@ -123,6 +123,7 @@ async fn main() {
     current_cm.load_resources()
         .await
         .expect("Failed to load resources");
+    std::mem::drop(current_cm);
 
     loop {
         let mut buf = [0; 512];
@@ -134,7 +135,7 @@ async fn main() {
                         .handle(
                             &buf[0..amt],
                             src
-                        );
+                        ).await;
                 });
             },
 
