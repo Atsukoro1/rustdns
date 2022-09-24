@@ -87,7 +87,7 @@ impl CMTrait for CacheManager {
             .unwrap()
             .get_mut();
 
-        match redis_c.get::<&str, Option<String>>("TLD:COM").unwrap() {
+        match redis_c.get::<&str, Option<String>>("TLD:com").unwrap() {
             Some(..) => {
                 // Already cached
                 info!(LOGGER, "TLDs are already cached!");

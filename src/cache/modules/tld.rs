@@ -11,6 +11,7 @@ pub async fn fp_tlds() -> Result<Vec<String>, reqwest::Error> {
         .into_iter()
         .map(|item: &str| {
             item.to_string()
+                .to_lowercase()
         })
         .collect::<Vec<String>>();
 
