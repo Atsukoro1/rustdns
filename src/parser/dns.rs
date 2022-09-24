@@ -18,7 +18,7 @@ pub struct DNS {
 }
 
 impl DNS {
-    pub fn _new() -> DNS {
+    pub fn new() -> DNS {
         DNS { 
             header: DNSHeader { 
                 id: 0, 

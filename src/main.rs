@@ -11,6 +11,7 @@ use crate::parser::opcode::OpCode;
 use lazy_static::lazy_static;
 use parser::r#type::Type;
 use parser::rcode::ResponseCode;
+use resolver::handler::{Handler, HandlerT};
 use crate::cache::def::{
     CacheManager, CMTrait
 };
@@ -33,6 +34,7 @@ use slog::{
 mod parser;
 mod helpers;
 mod cache;
+mod resolver;
 
 lazy_static! {
     pub static ref LOGGER: slog::Logger = {
@@ -113,18 +115,6 @@ lazy_static! {
     });
 }
 
-fn handle_datagram(bytes: &[u8], _src: SocketAddr) {
-    let mut datagram = DNS::from(&*bytes).unwrap();
-    println!("{:?}", datagram);
-
-    datagram.header.error_code = ResponseCode::FormatError;
-    datagram.header.qr = Type::Response;
-    datagram.header.op_code = OpCode::Query;
-    datagram.header.authoritative = true;
-
-    let dg = DNS::from(&*datagram.bytes().unwrap());
-}
-
 #[tokio::main]
 async fn main() {
     let mut current_cm: MutexGuard<CacheManager> = CACHEMANAGER.lock()
@@ -140,10 +130,11 @@ async fn main() {
         match SOCKET.recv_from(&mut buf) {
             Ok((amt, src)) => {
                 tokio::task::spawn(async move {
-                    handle_datagram(
-                        &buf[0..amt],
-                        src
-                    );
+                    Handler::new()
+                        .handle(
+                            &buf[0..amt],
+                            src
+                        );
                 });
             },
 
