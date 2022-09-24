@@ -1,13 +1,27 @@
+use std::net::SocketAddr;
+
 use redis::Commands;
 
 use crate::{parser::{
     question::DNSQuestion, 
     rcode::ResponseCode, 
     resource::DNSResourceFormat
-}, CACHEMANAGER};
+}, CACHEMANAGER, 
+    cache::modules::rootserver::RootServer
+};
 
 pub struct QuestionHandler {
-    question: Option<DNSQuestion>
+    /// Holding the question by the end user
+    question: Option<DNSQuestion>,
+
+    /// Root server assigned for this particular question
+    root_server: Option<RootServer>,
+
+    /// TLD nameserver assigned for this particular question
+    tld_ns: Option<SocketAddr>,
+
+    /// Authoritative nameserver assigned for this particular question
+    authoritative_ns: Option<SocketAddr>
 }
 
 #[async_trait::async_trait]
@@ -25,7 +39,12 @@ pub trait QuestionHandlerT {
 #[async_trait::async_trait]
 impl QuestionHandlerT for QuestionHandler {
     fn new() -> QuestionHandler {
-        QuestionHandler { question: None }
+        QuestionHandler { 
+            question: None,
+            root_server: None,
+            tld_ns: None,
+            authoritative_ns: None
+        }
     }
 
     async fn check_if_exists(name: &String) -> bool {
