@@ -13,9 +13,7 @@ use super::question::{
     QuestionHandlerT
 };
 
-/*
-    This struct takes an ownership of the datagram and will process it.
-*/
+/// This struct takes an ownership of the datagram and will process it.
 pub struct Handler {
     pub datagram: DNS,
     pub sent_from: Option<SocketAddr>
@@ -23,27 +21,20 @@ pub struct Handler {
 
 #[async_trait::async_trait]
 pub trait HandlerT {
-    // Creates a new datagram handler
+    /// Creates a new datagram handler
     fn new() -> Handler;
 
-    /*
-        Will parse the datagram and send a response back if parsing fails,
-        once done, datagram is moved to resolve_questions function for further
-        processing
-    */
+    /// Will parse the datagram and send a response back if parsing fails,
+    /// once done, datagram is moved to resolve_questions function for further
+    /// processing
     async fn handle(&mut self, buf: &[u8], from: SocketAddr);
 
-    /*
-        Will send each question to question handler that will check validity of
-        each one and then resolve and return back result.
-
-        Can send "fail response" if processing fails
-    */
+    /// Will send each question to question handler that will check validity of
+    /// each one and then resolve and return back result.
+    /// Can send "fail response" if processing fails
     async fn resolve_questions(&mut self);
 
-    /*
-        Helper function for sending responses when resolving fails
-    */
+    /// Helper function for sending responses when resolving fails
     fn send_fail_response(&mut self, code: ResponseCode);
 }
 
@@ -82,8 +73,8 @@ impl HandlerT for Handler {
                             .push(result_rf);
                     },
 
-                    Err(..) => {
-                        self.send_fail_response(ResponseCode::FormatError);
+                    Err(code) => {
+                        self.send_fail_response(code);
                         break;
                     }
                 }

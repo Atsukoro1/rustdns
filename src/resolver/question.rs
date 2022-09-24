@@ -12,6 +12,7 @@ pub struct QuestionHandler {
 
 #[async_trait::async_trait]
 pub trait QuestionHandlerT {
+    /// Create a new instance of question handler
     fn new() -> QuestionHandler;
 
     async fn handle(
@@ -52,14 +53,19 @@ impl QuestionHandlerT for QuestionHandler {
                 .last()
                 .unwrap()
                 .to_string()
+                .to_uppercase()
         ).await;
 
         if !exists {
-            return Err::<DNSResourceFormat, ResponseCode>(
+            return Err(
                 ResponseCode::NameError
             );
         }
 
-        Err(ResponseCode::FormatError)
+        /*
+            This code is here only for now because resource record 
+            format is not implemented
+        */
+        Err(ResponseCode::ServerFailure)
     }
 }
