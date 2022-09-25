@@ -1,4 +1,4 @@
-use std::{net::{SocketAddr, UdpSocket, IpAddr, Ipv4Addr}, str::FromStr};
+use std::{net::{SocketAddr}, str::FromStr};
 use redis::Commands;
 use fancy_regex::Regex;
 use crate::{parser::{
@@ -8,6 +8,7 @@ use crate::{parser::{
 }, CACHEMANAGER, 
     cache::modules::rootserver::RootServer, CONFIG
 };
+use tokio::{net::TcpStream, io::AsyncWriteExt};
 
 pub struct QuestionHandler {
     /// Holding the question by the end user
@@ -43,7 +44,7 @@ pub trait QuestionHandlerT {
     fn check_fqdn_validity(fqdn: &String) -> bool;
 
     /// Will get available root server and 
-    async fn query_rootserver(&mut self, socket: &mut UdpSocket) -> Result<(), ResponseCode>;
+    async fn query_rootserver(&mut self) -> Result<(), ResponseCode>;
 }
 
 #[async_trait::async_trait]
@@ -87,7 +88,6 @@ impl QuestionHandlerT for QuestionHandler {
                 .unwrap()
                 .name
         );
-        println!("{}", valid);
 
         if !valid {
             return Err(
@@ -111,25 +111,7 @@ impl QuestionHandlerT for QuestionHandler {
             );
         }
 
-        /*
-            This socket will be used to fetch all nameservers and stuff like that.
-
-            We're setting the port number to zero because the OS will automatically
-            allocate some available port number for us
-        */
-        let req_socket = UdpSocket::bind(format!(
-            "{}:{}",
-            CONFIG.host.hostname, 
-            0
-        ));
-
-        if req_socket.is_err() {
-            return Err(
-                ResponseCode::ServerFailure
-            );
-        }
-
-        match Self::query_rootserver(&mut self, &mut req_socket.unwrap()).await {
+        match Self::query_rootserver(&mut self).await {
             Ok(..) => {
 
             },
@@ -148,7 +130,7 @@ impl QuestionHandlerT for QuestionHandler {
         Err(ResponseCode::ServerFailure)
     }
 
-    async fn query_rootserver(&mut self, socket: &mut UdpSocket) -> Result<(), ResponseCode> {
+    async fn query_rootserver(&mut self) -> Result<(), ResponseCode> {
         let mut cm = CACHEMANAGER.lock().await;
         let r_inst = cm
             .redis_instance
@@ -158,7 +140,6 @@ impl QuestionHandlerT for QuestionHandler {
 
         let r_inst = r_inst.get::<&str, String>("ROOTS:A")
             .unwrap();
-
         /*
             Cache manager will be dropped at the end of the file which is
             after the request and that's extra latency. Instead it will be 
@@ -176,7 +157,7 @@ impl QuestionHandlerT for QuestionHandler {
         root_s_datagram.header.op_code = OpCode::Query;
         root_s_datagram.header.id = 1;
         root_s_datagram.questions = vec![DNSQuestion { 
-            name: question.name.clone(), 
+            name: "com.".to_string(), 
             qtype: question.qtype, 
             class: question.class 
         }];
@@ -188,17 +169,19 @@ impl QuestionHandlerT for QuestionHandler {
             .split("_")
             .nth(2)
             .unwrap();
-        println!("{}",  format!("{}:{}", hostname, 53));
+        
+        let mut req_stream = TcpStream::connect(
+            format!("{}:{}", hostname, 53)
+        ).await.unwrap();
 
-        socket.connect(format!("{}:{}", hostname, "53")).unwrap();
-        socket.send_to(
-            &*root_s_datagram.bytes().unwrap(),
-            format!("{}:{}", hostname, "53")
-        ).expect("Bruh fail!");
+        req_stream.write(&*root_s_datagram.bytes().unwrap())
+            .await
+            .expect("Writing fails");
 
-        let mut buf: [u8; 512] = [1; 512];
-        socket.peek_from(&mut buf).expect("Failed");
-
+        let mut buf: [u8; 2000] = [1; 2000];
+        req_stream.peek(&mut buf)
+            .await
+            .expect("Failed to peek");
         println!("{:?}", buf);
 
         todo!();
