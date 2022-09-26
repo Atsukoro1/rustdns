@@ -31,8 +31,8 @@ impl DNS {
                 error_code: ResponseCode::NoError, 
                 question_count: 0, 
                 answer_count: 0, 
-                nameserver_count: 0, 
-                resource_count: 0
+                authority_count: 0, 
+                additional_count: 0
             }, 
             questions: vec![],
             answer: None,
@@ -46,9 +46,50 @@ impl DNS {
         let result = DNSHeader::try_from(&mut reader)
             .unwrap();
 
-        let answer: Option<Vec<DNSResourceFormat>> = None;
-        let authority: Option<Vec<DNSResourceFormat>> = None;
-        let additional: Option<Vec<DNSResourceFormat>> = None;
+        let answer: Option<Vec<DNSResourceFormat>> = if result.answer_count > 0 {
+            let mut res: Vec<DNSResourceFormat> = vec![];
+
+            for _ in 0..result.answer_count {
+                res.push(
+                    DNSResourceFormat::from(&mut reader)
+                        .unwrap()
+                );
+            }
+
+            Some(res)
+        } else {
+            None
+        };
+
+        let authority: Option<Vec<DNSResourceFormat>> = if result.authority_count > 0 {
+            let mut res: Vec<DNSResourceFormat> = vec![];
+
+            for _ in 0..result.authority_count {
+                res.push(
+                    DNSResourceFormat::from(&mut reader)
+                        .unwrap()
+                );
+            }
+
+            Some(res)
+        } else {
+            None
+        };
+
+        let additional: Option<Vec<DNSResourceFormat>> = if result.additional_count > 0 {
+            let mut res: Vec<DNSResourceFormat> = vec![];
+
+            for _ in 0..result.additional_count {
+                res.push(
+                    DNSResourceFormat::from(&mut reader)
+                        .unwrap()
+                );
+            }
+
+            Some(res)
+        } else {
+            None
+        };
 
         let questions = DNSQuestion::try_from(&mut reader, result.question_count)
             .unwrap();

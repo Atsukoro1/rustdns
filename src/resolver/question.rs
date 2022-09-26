@@ -9,6 +9,7 @@ use crate::{parser::{
     cache::modules::rootserver::RootServer, CONFIG
 };
 use tokio::{net::TcpStream, io::{AsyncWriteExt, AsyncReadExt}};
+use super::transport;
 
 pub struct QuestionHandler {
     /// Holding the question by the end user
@@ -174,30 +175,14 @@ impl QuestionHandlerT for QuestionHandler {
             .unwrap();
         
         /*
-            We are creating the socket on port 0, which means OS will assign 
-            available port on it's own
+            Create transport that will handle the whole TCP/UDP mess situation
         */
-        let mut stream = UdpSocket::bind(
-            SocketAddr::new(
-                IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 0
-            )
-        ).unwrap();
-
-        stream.send_to(
-            &*root_s_datagram.bytes().unwrap(),
-            format!("{}:{}", hostname, 53))
-            .unwrap();
-
-        let mut buf: [u8; 1000] = [1; 1000];
-        match stream.peek(&mut buf) {
-            Ok(..) => {
-                println!("{:?}", DNS::from(&buf));
-            }
-    
-            Err(e) => {
-                println!("{:?}", e);
-            }
-        }
+        transport::onetime_transport(
+            &root_s_datagram.bytes().unwrap(), 
+            format!("{}:{}", hostname, 53).parse::<SocketAddr>()
+                .unwrap(),
+            None
+        ).await.expect("Bruh");
 
         todo!();
     }

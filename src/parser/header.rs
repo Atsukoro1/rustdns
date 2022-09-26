@@ -25,8 +25,8 @@ pub struct DNSHeader {
     pub error_code: ResponseCode,
     pub question_count: u16,
     pub answer_count: u16,
-    pub nameserver_count: u16,
-    pub resource_count: u16
+    pub authority_count: u16,
+    pub additional_count: u16
 }
 
 impl DNSHeader {
@@ -42,8 +42,8 @@ impl DNSHeader {
             error_code: ResponseCode::NoError, 
             question_count: 0, 
             answer_count: 0, 
-            nameserver_count: 0, 
-            resource_count: 0
+            authority_count: 0, 
+            additional_count: 0
         }
     }
 
@@ -93,8 +93,8 @@ impl DNSHeader {
 
         result.question_count = reader.read_u16(16).unwrap();
         result.answer_count = reader.read_u16(16).unwrap();
-        result.nameserver_count = reader.read_u16(16).unwrap();
-        result.resource_count = reader.read_u16(16).unwrap();
+        result.authority_count = reader.read_u16(16).unwrap();
+        result.additional_count = reader.read_u16(16).unwrap();
         
         Ok(result)
     }
@@ -162,12 +162,12 @@ impl DNSHeader {
         bytes[7].set_bit_range(0..7, an_bits[1]);
     
         push_byte_vec!(bytes, 2, 0x0);
-        let ns_bits: [u8; 2] = convert_u16_to_two_u8s!(datagram.header.nameserver_count, u16);
+        let ns_bits: [u8; 2] = convert_u16_to_two_u8s!(datagram.header.authority_count, u16);
         bytes[8].set_bit_range(0..7, ns_bits[0]);
         bytes[9].set_bit_range(0..7, ns_bits[1]);
     
         push_byte_vec!(bytes, 2, 0x0);
-        let ar_bits: [u8; 2] = convert_u16_to_two_u8s!(datagram.header.resource_count, u16);
+        let ar_bits: [u8; 2] = convert_u16_to_two_u8s!(datagram.header.additional_count, u16);
         bytes[10].set_bit_range(0..7, ar_bits[0]);
         bytes[11].set_bit_range(0..7, ar_bits[1]);
     }
