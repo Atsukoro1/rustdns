@@ -1,14 +1,14 @@
-use std::{net::{SocketAddr}, str::FromStr};
+use std::{net::{SocketAddr, UdpSocket, IpAddr, Ipv4Addr}, str::FromStr};
 use redis::Commands;
 use fancy_regex::Regex;
 use crate::{parser::{
     question::DNSQuestion, 
     rcode::ResponseCode, 
-    resource::DNSResourceFormat, dns::DNS, r#type::Type, opcode::OpCode
+    resource::DNSResourceFormat, dns::DNS, r#type::Type, opcode::OpCode, qtype::QuestionType, qclass::QuestionClass
 }, CACHEMANAGER, 
     cache::modules::rootserver::RootServer, CONFIG
 };
-use tokio::{net::TcpStream, io::AsyncWriteExt};
+use tokio::{net::TcpStream, io::{AsyncWriteExt, AsyncReadExt}};
 
 pub struct QuestionHandler {
     /// Holding the question by the end user
@@ -151,15 +151,18 @@ impl QuestionHandlerT for QuestionHandler {
             .as_ref()
             .unwrap();
 
+        // Building question for root server
         let mut root_s_datagram = DNS::new();
         root_s_datagram.header.qr = Type::Query;
+        root_s_datagram.header.truncated = false;
+        root_s_datagram.header.recursion_desired = true;
         root_s_datagram.header.question_count = 1;
         root_s_datagram.header.op_code = OpCode::Query;
-        root_s_datagram.header.id = 1;
+        root_s_datagram.header.id = 10039;
         root_s_datagram.questions = vec![DNSQuestion { 
-            name: "com.".to_string(), 
-            qtype: question.qtype, 
-            class: question.class 
+            name: "com".to_string(), 
+            qtype: QuestionType::NS, 
+            class: QuestionClass::IN 
         }];
 
         let hostname = r_inst.split(" ")
@@ -170,19 +173,31 @@ impl QuestionHandlerT for QuestionHandler {
             .nth(2)
             .unwrap();
         
-        let mut req_stream = TcpStream::connect(
-            format!("{}:{}", hostname, 53)
-        ).await.unwrap();
+        /*
+            We are creating the socket on port 0, which means OS will assign 
+            available port on it's own
+        */
+        let mut stream = UdpSocket::bind(
+            SocketAddr::new(
+                IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 0
+            )
+        ).unwrap();
 
-        req_stream.write(&*root_s_datagram.bytes().unwrap())
-            .await
-            .expect("Writing fails");
+        stream.send_to(
+            &*root_s_datagram.bytes().unwrap(),
+            format!("{}:{}", hostname, 53))
+            .unwrap();
 
-        let mut buf: [u8; 2000] = [1; 2000];
-        req_stream.peek(&mut buf)
-            .await
-            .expect("Failed to peek");
-        println!("{:?}", buf);
+        let mut buf: [u8; 1000] = [1; 1000];
+        match stream.peek(&mut buf) {
+            Ok(..) => {
+                println!("{:?}", DNS::from(&buf));
+            }
+    
+            Err(e) => {
+                println!("{:?}", e);
+            }
+        }
 
         todo!();
     }
