@@ -6,15 +6,16 @@ use std::{net::{
     UdpSocket, 
     SocketAddr, 
     Ipv4Addr, 
-    IpAddr
-}};
+    IpAddr, TcpStream
+}, io::{Write, Read}};
 
 enum_from_primitive! {
     #[repr(u8)]
     #[derive(Debug)]
     pub enum TransportError {
         ClientInstantiateError = 0x0,
-        TransportError = 0x2
+        ReadError = 0x2,
+        WriteError = 0x3
     }
 }
 
@@ -46,6 +47,7 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
             );
 
             if socket.is_err() {
+                println!("{:?}", socket.err());
                 return Err::<DNS, TransportError>(
                     TransportError::ClientInstantiateError
                 );
@@ -66,7 +68,7 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
                 }
 
                 return Err::<DNS, TransportError>(
-                    TransportError::TransportError
+                    TransportError::WriteError
                 );
             }
 
@@ -75,8 +77,6 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
                 .expect("Failed");
 
             let datagram = DNS::from(&buf);
-
-            println!("{:?}", datagram);
 
             /* 
                 Check if message length is bigger than this actual datagram length.
@@ -92,7 +92,37 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
         },
 
         Some(TransportProto::TCP) => {
+            let mut stream: std::io::Result<TcpStream> = TcpStream::connect(host);
 
+            if stream.is_err() {
+                return Err::<DNS, TransportError>(
+                    TransportError::ClientInstantiateError   
+                );
+            };
+
+            let write_str = stream.as_mut().unwrap().write(payload);
+
+            if write_str.is_err() {
+                return Err::<DNS, TransportError>(
+                    TransportError::WriteError
+                );
+            };
+
+            let mut buf: [u8; 2048] = [1; 2048];
+            let read_str = stream.unwrap().read(&mut buf);
+
+            if read_str.is_err() {
+                return Err::<DNS, TransportError>(
+                    TransportError::ReadError
+                );
+            };
+
+            println!("{:?}", buf);
+
+            // let datagram = DNS::from(&buf);
+
+            // println!("{}", 1);
+            // println!("{:?}", datagram);
         }
     }
 
