@@ -1,4 +1,6 @@
 use bitreader::BitReader;
+use crate::resolver::transport::TransportProto;
+
 use super::{
     header::DNSHeader, 
     question::DNSQuestion, 
@@ -21,6 +23,7 @@ impl DNS {
     pub fn new() -> DNS {
         DNS { 
             header: DNSHeader { 
+                length: None,
                 id: 0, 
                 qr: Type::Query, 
                 op_code: OpCode::Status, 
@@ -41,9 +44,9 @@ impl DNS {
         }
     }
 
-    pub fn from(bytes: &[u8]) -> Result<DNS, ResponseCode> {
+    pub fn from(bytes: &[u8], proto: TransportProto) -> Result<DNS, ResponseCode> {
         let mut reader = BitReader::new(bytes);
-        let result = DNSHeader::try_from(&mut reader)
+        let result = DNSHeader::try_from(&mut reader, proto)
             .unwrap();
 
         // let answer: Option<Vec<DNSResourceFormat>> = if result.answer_count > 0 {

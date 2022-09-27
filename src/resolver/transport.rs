@@ -79,7 +79,7 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
             socket.unwrap().peek(&mut buf)
                 .expect("Failed");
 
-            let datagram = DNS::from(&buf);
+            let datagram = DNS::from(&buf, TransportProto::UDP);
 
             /* 
                 Check if message length is bigger than this actual datagram length.
@@ -126,7 +126,8 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
                 );
             };
 
-            let datagram = DNS::from(&buf);
+            let datagram = DNS::from(&buf, TransportProto::TCP);
+            println!("{:?}", datagram);
         }
     }
 

@@ -4,7 +4,7 @@ use enum_primitive::FromPrimitive;
 use crate::{
     convert_u16_to_two_u8s, 
     bit_assign,
-    push_byte_vec
+    push_byte_vec, resolver::transport::TransportProto
 };
 
 use super::{
@@ -15,6 +15,7 @@ use super::{
 
 #[derive(Debug)]
 pub struct DNSHeader {
+    pub length: Option<u16>,
     pub id: u16,
     pub qr: Type,
     pub op_code: OpCode,
@@ -32,6 +33,7 @@ pub struct DNSHeader {
 impl DNSHeader {
     pub fn new() -> Self {
         DNSHeader { 
+            length: None,
             id: 1, 
             qr: Type::Response, 
             op_code: OpCode::Query,
@@ -47,8 +49,15 @@ impl DNSHeader {
         }
     }
 
-    pub fn try_from(reader: &mut BitReader) -> Result<Self, ResponseCode> {
+    pub fn try_from(reader: &mut BitReader, proto: TransportProto) -> Result<Self, ResponseCode> {
         let mut result = DNSHeader::new();
+
+        // TCP messages are prefixed with two-byte length header
+        if proto == TransportProto::TCP {
+            result.length = Some(
+                reader.read_u16(16).unwrap()
+            );
+        };
 
         result.id = reader.read_u16(16).unwrap();
 

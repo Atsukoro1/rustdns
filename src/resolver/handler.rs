@@ -8,10 +8,10 @@ use crate::{
     }, 
     LOGGER, SOCKET
 };
-use super::question::{
+use super::{question::{
     QuestionHandler, 
     QuestionHandlerT
-};
+}, transport::TransportProto};
 
 /// This struct takes an ownership of the datagram and will process it.
 pub struct Handler {
@@ -84,7 +84,7 @@ impl HandlerT for Handler {
     async fn handle(&mut self, buf: &[u8], from: SocketAddr) {
         self.sent_from = Some(from);
 
-        match DNS::from(&*buf) {
+        match DNS::from(&*buf, TransportProto::UDP) {
             Ok(result) => {
                 self.datagram = result;
                 println!("{:?}", self.datagram);
