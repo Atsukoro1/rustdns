@@ -160,11 +160,11 @@ impl QuestionHandlerT for QuestionHandler {
         root_s_datagram.header.question_count = 1;
         root_s_datagram.header.op_code = OpCode::Query;
         root_s_datagram.header.id = 10039;
-        root_s_datagram.questions = vec![DNSQuestion { 
+        root_s_datagram.questions = Some(vec![DNSQuestion { 
             name: "com".to_string(), 
             qtype: QuestionType::NS, 
             class: QuestionClass::IN 
-        }];
+        }]);
 
         let hostname = r_inst.split(" ")
             .into_iter()

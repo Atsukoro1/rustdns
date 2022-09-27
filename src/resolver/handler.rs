@@ -64,9 +64,9 @@ impl HandlerT for Handler {
     }
 
     async fn resolve_questions(&mut self) {
-        for i in 0..self.datagram.questions.len() {
+        for i in 0..self.datagram.questions.as_ref().unwrap().len() {
             match QuestionHandler::new()
-                .handle(self.datagram.questions[i].clone()).await {
+                .handle(self.datagram.questions.as_ref().unwrap()[i].clone()).await {
                     Ok(result_rf) => {
                         self.datagram.answer.as_mut()
                             .unwrap()

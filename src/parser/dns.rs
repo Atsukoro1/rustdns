@@ -13,7 +13,7 @@ use super::{
 #[derive(Debug)]
 pub struct DNS {
     pub header: DNSHeader,
-    pub questions: Vec<DNSQuestion>,
+    pub questions: Option<Vec<DNSQuestion>>,
     pub answer: Option<Vec<DNSResourceFormat>>,
     pub authority: Option<Vec<DNSResourceFormat>>,
     pub additional: Option<Vec<DNSResourceFormat>>
@@ -37,7 +37,7 @@ impl DNS {
                 authority_count: 0, 
                 additional_count: 0
             }, 
-            questions: vec![],
+            questions: None,
             answer: None,
             authority: None,
             additional: None
@@ -49,60 +49,69 @@ impl DNS {
         let result = DNSHeader::try_from(&mut reader, proto)
             .unwrap();
 
-        // let answer: Option<Vec<DNSResourceFormat>> = if result.answer_count > 0 {
-        //     let mut res: Vec<DNSResourceFormat> = vec![];
+        let mut questions = None;
+        let mut answer = None;
+        let mut authority = None;
+        let mut additional = None;
 
-        //     for _ in 0..result.answer_count {
-        //         res.push(
-        //             DNSResourceFormat::from(&mut reader)
-        //                 .unwrap()
-        //         );
-        //     }
+        if !result.truncated {
+            questions = Some(
+                DNSQuestion::try_from(&mut reader, result.question_count)
+                    .unwrap()
+            );
 
-        //     Some(res)
-        // } else {
-        //     None
-        // };
-
-        // let authority: Option<Vec<DNSResourceFormat>> = if result.authority_count > 0 {
-        //     let mut res: Vec<DNSResourceFormat> = vec![];
-
-        //     for _ in 0..result.authority_count {
-        //         res.push(
-        //             DNSResourceFormat::from(&mut reader)
-        //                 .unwrap()
-        //         );
-        //     }
-
-        //     Some(res)
-        // } else {
-        //     None
-        // };
-
-        // let additional: Option<Vec<DNSResourceFormat>> = if result.additional_count > 0 {
-        //     let mut res: Vec<DNSResourceFormat> = vec![];
-
-        //     for _ in 0..result.additional_count {
-        //         res.push(
-        //             DNSResourceFormat::from(&mut reader)
-        //                 .unwrap()
-        //         );
-        //     }
-
-        //     Some(res)
-        // } else {
-        //     None
-        // };
-
-        let questions = DNSQuestion::try_from(&mut reader, result.question_count)
-            .unwrap();
+            answer = if result.answer_count > 0 {
+                let mut res: Vec<DNSResourceFormat> = vec![];
+    
+                for _ in 0..result.answer_count {
+                    res.push(
+                        DNSResourceFormat::from(&mut reader)
+                            .unwrap()
+                    );
+                }
+    
+                Some(res)
+            } else {
+                None
+            };
+    
+            authority = if result.authority_count > 0 {
+                let mut res: Vec<DNSResourceFormat> = vec![];
+    
+                for _ in 0..result.authority_count {
+                    res.push(
+                        DNSResourceFormat::from(&mut reader)
+                            .unwrap()
+                    );
+                }
+    
+                Some(res)
+            } else {
+                None
+            };
+    
+            additional = if result.additional_count > 0 {
+                let mut res: Vec<DNSResourceFormat> = vec![];
+    
+                for _ in 0..result.additional_count {
+                    res.push(
+                        DNSResourceFormat::from(&mut reader)
+                            .unwrap()
+                    );
+                }
+    
+                Some(res)
+            } else {
+                None
+            };
+        }
 
         Ok(DNS {
             header: result,
             questions: questions,
-            answer: None,
-            authority: None,
-            additional: None
+            answer: answer,
+            authority: authority,
+            additional: additional
         })
     }
 

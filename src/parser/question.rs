@@ -68,7 +68,7 @@ impl DNSQuestion {
 
     pub fn bytes(bytes: &mut Vec<u8>, datagram: &DNS) {
         let mut offset: u128 = 12;
-        for question in &datagram.questions {
+        for question in datagram.questions.as_ref().unwrap() {
             let name_parts = question.name.split(".")
                 .collect::<Vec<&str>>();
 
