@@ -19,9 +19,20 @@ enum_from_primitive! {
     #[repr(u8)]
     #[derive(Debug)]
     pub enum TransportError {
+        /*
+            Client cannot be instantiated probably because ip or port is 
+            already taken or this process does not have permissions to 
+            use the port
+        */
         ClientInstantiateError = 0x0,
+
+        // Something happened when reading the received buffer
         ReadError = 0x2,
+
+        // Something happened when writing the payload
         WriteError = 0x3,
+
+        // Datagram length is smaller than it should be
         DatagramLengthError = 0x4
     }
 }
