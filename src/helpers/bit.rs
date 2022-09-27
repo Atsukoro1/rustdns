@@ -62,3 +62,13 @@ macro_rules! push_byte_vec {
         }
     };
 }
+
+/// Prepend slice to front of vector
+pub fn prepend<T>(v: Vec<T>, s: &[T]) -> Vec<T>
+where
+    T: Clone,
+{
+    let mut tmp: Vec<_> = s.to_owned();
+    tmp.extend(v);
+    tmp
+}

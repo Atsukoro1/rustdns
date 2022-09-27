@@ -6,11 +6,7 @@ extern crate slog;
 extern crate bit;
 
 use crate::helpers::config::Config;
-use crate::parser::dns::DNS;
-use crate::parser::opcode::OpCode;
 use lazy_static::lazy_static;
-use parser::r#type::Type;
-use parser::rcode::ResponseCode;
 use resolver::handler::{Handler, HandlerT};
 use crate::cache::def::{
     CacheManager, CMTrait

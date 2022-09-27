@@ -1,6 +1,10 @@
+use crate::helpers::bit::prepend;
 #[allow(dead_code)]
 
-use crate::parser::dns::DNS;
+use crate::{
+    parser::dns::DNS,
+    convert_u16_to_two_u8s
+};
 use async_recursion::async_recursion;
 use std::{net::{
     UdpSocket, 
@@ -75,57 +79,54 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
             socket.unwrap().peek(&mut buf)
                 .expect("Failed");
 
-            return Ok(DNS::from(&buf).unwrap());
+            let datagram = DNS::from(&buf);
 
             /* 
                 Check if message length is bigger than this actual datagram length.
                 This is the whole purpose of this function.
             */
-            // if datagram.unwrap().header.truncated {
-            //     return onetime_transport(
-            //         payload, 
-            //         host, 
-            //         Some(TransportProto::TCP)
-            //     ).await;
-            // }
+            if datagram.unwrap().header.truncated {
+                return onetime_transport(
+                    payload, 
+                    host, 
+                    Some(TransportProto::TCP)
+                ).await;
+            }
         },
 
         Some(TransportProto::TCP) => {
-            // For now i'll only work with UDP
+            let mut stream: std::io::Result<TcpStream> = TcpStream::connect(host);
 
-            // let mut stream: std::io::Result<TcpStream> = TcpStream::connect(host);
+            if stream.is_err() {
+                return Err::<DNS, TransportError>(
+                    TransportError::ClientInstantiateError   
+                );
+            };
 
-            // println!("{:?}", payload);
+            let u8_len: [u8; 2] = convert_u16_to_two_u8s!(payload.len() as u16, u16);
+            let vec_u8 = prepend(payload.to_vec(), &u8_len);
+            let write_str = stream.as_mut()
+                .unwrap()
+                .write(
+                    &*vec_u8
+                );
 
-            // if stream.is_err() {
-            //     return Err::<DNS, TransportError>(
-            //         TransportError::ClientInstantiateError   
-            //     );
-            // };
+            if write_str.is_err() {
+                return Err::<DNS, TransportError>(
+                    TransportError::WriteError
+                );
+            };
 
-            // let write_str = stream.as_mut().unwrap().write(payload);
+            let mut buf: [u8; 2048] = [1; 2048];
+            let read_str = stream.unwrap().read(&mut buf);
 
-            // if write_str.is_err() {
-            //     return Err::<DNS, TransportError>(
-            //         TransportError::WriteError
-            //     );
-            // };
+            if read_str.is_err() {
+                return Err::<DNS, TransportError>(
+                    TransportError::ReadError
+                );
+            };
 
-            // let mut buf: [u8; 2048] = [1; 2048];
-            // let read_str = stream.unwrap().read(&mut buf);
-
-            // if read_str.is_err() {
-            //     return Err::<DNS, TransportError>(
-            //         TransportError::ReadError
-            //     );
-            // };
-
-            // println!("{:?}", buf);
-
-            // let datagram = DNS::from(&buf);
-
-            // println!("{}", 1);
-            // println!("{:?}", datagram);
+            let datagram = DNS::from(&buf);
         }
     }
 

@@ -83,34 +83,34 @@ impl QuestionHandlerT for QuestionHandler {
     async fn handle(&mut self, inp: DNSQuestion) -> Result<DNSResourceFormat, ResponseCode> {
         self.question = Some(inp);
 
-        let valid = Self::check_fqdn_validity(
-            &self.question
-                .as_ref()
-                .unwrap()
-                .name
-        );
+        // let valid = Self::check_fqdn_validity(
+        //     &self.question
+        //         .as_ref()
+        //         .unwrap()
+        //         .name
+        // );
 
-        if !valid {
-            return Err(
-                ResponseCode::NameError
-            )
-        }
+        // if !valid {
+        //     return Err(
+        //         ResponseCode::NameError
+        //     )
+        // }
         
-        let exists: bool = Self::check_if_exists(
-            &self.question.as_ref()
-                .unwrap()
-                .name
-                .split(".")
-                .last()
-                .unwrap()
-                .to_string()
-        ).await;
+        // let exists: bool = Self::check_if_exists(
+        //     &self.question.as_ref()
+        //         .unwrap()
+        //         .name
+        //         .split(".")
+        //         .last()
+        //         .unwrap()
+        //         .to_string()
+        // ).await;
 
-        if !exists {
-            return Err(
-                ResponseCode::NameError
-            );
-        }
+        // if !exists {
+        //     return Err(
+        //         ResponseCode::NameError
+        //     );
+        // }
 
         match Self::query_rootserver(&mut self).await {
             Ok(..) => {

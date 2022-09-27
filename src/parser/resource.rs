@@ -1,7 +1,4 @@
-use std::ops::Add;
-
 use bitreader::BitReader;
-use enum_primitive::FromPrimitive;
 
 use super::{
     qclass::QuestionClass,

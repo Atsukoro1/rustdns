@@ -46,50 +46,50 @@ impl DNS {
         let result = DNSHeader::try_from(&mut reader)
             .unwrap();
 
-        let answer: Option<Vec<DNSResourceFormat>> = if result.answer_count > 0 {
-            let mut res: Vec<DNSResourceFormat> = vec![];
+        // let answer: Option<Vec<DNSResourceFormat>> = if result.answer_count > 0 {
+        //     let mut res: Vec<DNSResourceFormat> = vec![];
 
-            for _ in 0..result.answer_count {
-                res.push(
-                    DNSResourceFormat::from(&mut reader)
-                        .unwrap()
-                );
-            }
+        //     for _ in 0..result.answer_count {
+        //         res.push(
+        //             DNSResourceFormat::from(&mut reader)
+        //                 .unwrap()
+        //         );
+        //     }
 
-            Some(res)
-        } else {
-            None
-        };
+        //     Some(res)
+        // } else {
+        //     None
+        // };
 
-        let authority: Option<Vec<DNSResourceFormat>> = if result.authority_count > 0 {
-            let mut res: Vec<DNSResourceFormat> = vec![];
+        // let authority: Option<Vec<DNSResourceFormat>> = if result.authority_count > 0 {
+        //     let mut res: Vec<DNSResourceFormat> = vec![];
 
-            for _ in 0..result.authority_count {
-                res.push(
-                    DNSResourceFormat::from(&mut reader)
-                        .unwrap()
-                );
-            }
+        //     for _ in 0..result.authority_count {
+        //         res.push(
+        //             DNSResourceFormat::from(&mut reader)
+        //                 .unwrap()
+        //         );
+        //     }
 
-            Some(res)
-        } else {
-            None
-        };
+        //     Some(res)
+        // } else {
+        //     None
+        // };
 
-        let additional: Option<Vec<DNSResourceFormat>> = if result.additional_count > 0 {
-            let mut res: Vec<DNSResourceFormat> = vec![];
+        // let additional: Option<Vec<DNSResourceFormat>> = if result.additional_count > 0 {
+        //     let mut res: Vec<DNSResourceFormat> = vec![];
 
-            for _ in 0..result.additional_count {
-                res.push(
-                    DNSResourceFormat::from(&mut reader)
-                        .unwrap()
-                );
-            }
+        //     for _ in 0..result.additional_count {
+        //         res.push(
+        //             DNSResourceFormat::from(&mut reader)
+        //                 .unwrap()
+        //         );
+        //     }
 
-            Some(res)
-        } else {
-            None
-        };
+        //     Some(res)
+        // } else {
+        //     None
+        // };
 
         let questions = DNSQuestion::try_from(&mut reader, result.question_count)
             .unwrap();
@@ -97,9 +97,9 @@ impl DNS {
         Ok(DNS {
             header: result,
             questions: questions,
-            answer: answer,
-            authority: authority,
-            additional: additional
+            answer: None,
+            authority: None,
+            additional: None
         })
     }
 
