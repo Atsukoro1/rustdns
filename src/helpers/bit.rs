@@ -52,6 +52,13 @@ macro_rules! convert_u16_to_two_u8s {
     }
 }
 
+#[macro_export]
+macro_rules! convert_two_u8s_to_u16 {
+    ($num1:expr, $num2:expr) => {
+        ($num1 as u16 * 256) + $num2 as u16
+    };
+}
+
 /// Push variables to vec multiple times
 /// Writes values straight into Vector instead of returning it
 #[macro_export]

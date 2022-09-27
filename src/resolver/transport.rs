@@ -3,15 +3,17 @@ use crate::helpers::bit::prepend;
 
 use crate::{
     parser::dns::DNS,
-    convert_u16_to_two_u8s
+    convert_u16_to_two_u8s,
+    convert_two_u8s_to_u16
 };
 use async_recursion::async_recursion;
+use std::io::{Read, Write};
 use std::{net::{
     UdpSocket, 
     SocketAddr, 
     Ipv4Addr, 
     IpAddr, TcpStream
-}, io::{Write, Read}};
+}};
 
 enum_from_primitive! {
     #[repr(u8)]
@@ -19,7 +21,8 @@ enum_from_primitive! {
     pub enum TransportError {
         ClientInstantiateError = 0x0,
         ReadError = 0x2,
-        WriteError = 0x3
+        WriteError = 0x3,
+        DatagramLengthError = 0x4
     }
 }
 
@@ -118,7 +121,7 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
             };
 
             let mut buf: [u8; 2048] = [1; 2048];
-            let read_str = stream.unwrap().read(&mut buf);
+            let read_str: Result<usize, std::io::Error> = stream.unwrap().read(&mut buf);
 
             if read_str.is_err() {
                 return Err::<DNS, TransportError>(
@@ -126,8 +129,26 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
                 );
             };
 
-            let datagram = DNS::from(&buf, TransportProto::TCP);
-            println!("{:?}", datagram);
+            // Remove unused bytes from the byte slice
+            let sliced: &[u8] = &buf[0..read_str.unwrap()];
+
+            /*
+                Since datagram can't be parsed, because we don't know if we
+                have the whole datagram, length will be extracted from the 
+                the first two bytes of the buffer
+            */
+            let buf_len = convert_two_u8s_to_u16!(sliced[0], sliced[1]);
+
+            // Check if datagram arrived in correct length
+            if buf_len != (sliced.as_ref().len() as u16 - 2) {
+                return Err::<DNS, TransportError>(
+                    TransportError::DatagramLengthError
+                );
+            };
+
+            let datagram = DNS::from(sliced, TransportProto::TCP);
+            
+            return Ok(datagram.unwrap());
         }
     }
 
