@@ -42,8 +42,9 @@ Your contributions are always welcome! Before you create any pull request, creat
 ## Documents / infomation sources
 The code itself is well-documented, so if you want to know something, data source link and the section of the document is probably at the top of the function or struct, but if you don't want to read it in code, I will also include it here.
 
-1. DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION By: Network Working Group of the IETF, c1987 [cit. 2022-9-14]. Available at: https://www.ietf.org/rfc/rfc1035.txt
+1. DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION By: Network Working Group of the IETF, 1987 [cit. 2022-9-14]. Available at: https://www.ietf.org/rfc/rfc1035.txt
 2. IANA (Internet Assiged Numbers Authority) - Root hint, zone and nameserver files Available at: https://www.iana.org/domains/root/files
+3. DOMAIN NAMES - CONCEPTS AND FACILITIES By: Network Working Group of the IETF, 1987 [cit. 2022-9-14]. Available at: https://www.rfc-editor.org/rfc/rfc1034
 
 ## License
 The MIT License (MIT) 2022 - [Jakub Dorničák](https://github.com/atsukoro1).

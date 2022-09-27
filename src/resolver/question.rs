@@ -161,7 +161,7 @@ impl QuestionHandlerT for QuestionHandler {
         root_s_datagram.header.op_code = OpCode::Query;
         root_s_datagram.header.id = 10039;
         root_s_datagram.questions = Some(vec![DNSQuestion { 
-            name: "com".to_string(), 
+            name: question.name.clone(), 
             qtype: QuestionType::NS, 
             class: QuestionClass::IN 
         }]);
@@ -177,12 +177,14 @@ impl QuestionHandlerT for QuestionHandler {
         /*
             Create transport that will handle the whole TCP/UDP mess situation
         */
-        transport::onetime_transport(
+        let pkt = transport::onetime_transport(
             &root_s_datagram.bytes().unwrap(), 
             format!("{}:{}", hostname, 53).parse::<SocketAddr>()
                 .unwrap(),
             None
         ).await.expect("Bruh");
+
+        println!("{:?}", pkt);
 
         todo!();
     }

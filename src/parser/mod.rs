@@ -14,3 +14,6 @@ pub mod question;
 
 /// https://www.ietf.org/rfc/rfc1035.html#section-4.1.3
 pub mod resource;
+
+/// https://www.rfc-editor.org/rfc/rfc1034
+pub mod fqdn;

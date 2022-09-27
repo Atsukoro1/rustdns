@@ -8,12 +8,13 @@ use crate::{
 use super::{
     qclass::QuestionClass,
     qtype::QuestionType,
-    rcode::ResponseCode, dns::DNS
+    rcode::ResponseCode, dns::DNS, 
+    fqdn::FQDN
 };
 
 #[derive(Debug, Clone)]
 pub struct DNSQuestion {
-    pub name: String,
+    pub name: FQDN,
     pub qtype: QuestionType,
     pub class: QuestionClass
 }
@@ -23,7 +24,7 @@ impl DNSQuestion {
         let mut questions: Vec<Self> = vec![];
         for _ in 0..count {
             let mut question: DNSQuestion = DNSQuestion { 
-                name: String::new(), 
+                name: FQDN::new(), 
                 qtype: QuestionType::A,
                 class: QuestionClass::CH
             };
@@ -52,7 +53,8 @@ impl DNSQuestion {
                 }
             }
 
-            question.name = qname;
+            question.name = FQDN::try_from(qname)
+                .unwrap();
             question.qtype = QuestionType::from_u16(
                 reader.read_u16(16).unwrap()
             ).unwrap();
@@ -69,11 +71,10 @@ impl DNSQuestion {
     pub fn bytes(bytes: &mut Vec<u8>, datagram: &DNS) {
         let mut offset: u128 = 12;
         for question in datagram.questions.as_ref().unwrap() {
-            let name_parts = question.name.split(".")
-                .collect::<Vec<&str>>();
+            let name_parts = question.name.split();
 
             let complete_length = question.name.len() + 6;
-            push_byte_vec!(bytes, complete_length as u8, 0x0);
+            push_byte_vec!(bytes, complete_length as u8 + 1, 0x0);
 
             // First write the initial length byte and then the content
             for name in name_parts {
