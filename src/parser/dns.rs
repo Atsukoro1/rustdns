@@ -60,20 +60,20 @@ impl DNS {
                     .unwrap()
             );
 
-            // answer = if result.answer_count > 0 {
-            //     let mut res: Vec<DNSResourceFormat> = vec![];
+            answer = if result.answer_count > 0 {
+                let mut res: Vec<DNSResourceFormat> = vec![];
     
-            //     for _ in 0..result.answer_count {
-            //         res.push(
-            //             DNSResourceFormat::from(&mut reader, bytes)
-            //                 .unwrap()
-            //         );
-            //     }
+                for _ in 0..result.answer_count {
+                    res.push(
+                        DNSResourceFormat::from(&mut reader, bytes)
+                            .unwrap()
+                    );
+                }
     
-            //     Some(res)
-            // } else {
-            //     None
-            // };
+                Some(res)
+            } else {
+                None
+            };
     
             authority = if result.authority_count > 0 {
                 let mut res: Vec<DNSResourceFormat> = vec![];
