@@ -87,7 +87,6 @@ impl HandlerT for Handler {
         match DNS::from(&*buf, TransportProto::UDP) {
             Ok(result) => {
                 self.datagram = result;
-                println!("{:?}", self.datagram);
                 self.resolve_questions().await;
             },
 

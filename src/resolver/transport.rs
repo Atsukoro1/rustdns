@@ -163,5 +163,5 @@ pub async fn onetime_transport(payload: &[u8], host: SocketAddr, proto: Option<T
         }
     }
 
-    Err(TransportError::ClientInstantiateError)
+    Err(TransportError::ReadError)
 }

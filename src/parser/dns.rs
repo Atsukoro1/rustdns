@@ -65,7 +65,7 @@ impl DNS {
     
                 for _ in 0..result.answer_count {
                     res.push(
-                        DNSResourceFormat::from(&mut reader)
+                        DNSResourceFormat::from(&mut reader, bytes)
                             .unwrap()
                     );
                 }
@@ -80,7 +80,7 @@ impl DNS {
     
                 for _ in 0..result.authority_count {
                     res.push(
-                        DNSResourceFormat::from(&mut reader)
+                        DNSResourceFormat::from(&mut reader, bytes)
                             .unwrap()
                     );
                 }
@@ -95,7 +95,7 @@ impl DNS {
     
                 for _ in 0..result.additional_count {
                     res.push(
-                        DNSResourceFormat::from(&mut reader)
+                        DNSResourceFormat::from(&mut reader, bytes)
                             .unwrap()
                     );
                 }
