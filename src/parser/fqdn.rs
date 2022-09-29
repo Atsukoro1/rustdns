@@ -1,16 +1,10 @@
+use super::rcode::ResponseCode;
+
 #[derive(Debug, Clone)]
 pub struct FQDN {
     pub subdomain: Option<String>,
     pub domain_name: String,
     pub tld: String
-}
-
-enum_from_primitive! {
-    #[repr(u8)]
-    #[derive(Clone, Debug)]
-    pub enum FQDNParsingError {
-        Missing = 0x0
-    }
 }
 
 impl FQDN {
@@ -50,7 +44,7 @@ impl FQDN {
 }
 
 impl TryFrom<String> for FQDN {
-    type Error = FQDNParsingError;
+    type Error = ResponseCode;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let splitted = value.split(".")
@@ -82,7 +76,7 @@ impl TryFrom<String> for FQDN {
 
             _ => {
                 return Err::<Self, Self::Error>(
-                    FQDNParsingError::Missing
+                    ResponseCode::FormatError
                 );
             }
         }

@@ -53,14 +53,19 @@ impl DNSQuestion {
                 }
             }
 
-            question.name = FQDN::try_from(qname)
-                .unwrap();
-            question.qtype = QuestionType::from_u16(
-                reader.read_u16(16).unwrap()
-            ).unwrap();
-            question.class = QuestionClass::from_u16(
-                reader.read_u16(16).unwrap()
-            ).unwrap();
+            let name_res: Result<FQDN, ResponseCode> = FQDN::try_from(qname);
+            let qtype_opt: Option<QuestionType> = QuestionType::from_u16(16);
+            let qclass_opt: Option<QuestionClass> = QuestionClass::from_u16(16);
+
+            if name_res.is_err() || qtype_opt.is_none() || qclass_opt.is_none() {
+                return Result::Err::<Vec<Self>, ResponseCode>(
+                    ResponseCode::FormatError
+                );
+            } else {
+                question.name = name_res.unwrap();
+                question.class = qclass_opt.unwrap();
+                question.qtype = qtype_opt.unwrap();
+            };
 
             questions.push(question);
         };
