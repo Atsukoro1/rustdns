@@ -1,5 +1,4 @@
 use bitreader::BitReader;
-use crate::resolver::nameresolver::{self};
 
 use super::{
     qclass::QuestionClass,
@@ -19,10 +18,8 @@ pub struct DNSResourceFormat {
 
 impl DNSResourceFormat {
     pub fn from(reader: &mut BitReader, bytes: &[u8]) -> Result<Self, ResponseCode> {
-        let final_name = nameresolver::resolve_name(reader, bytes);
-
         Ok(DNSResourceFormat {
-            name: final_name,
+            name: String::from("test"),
             rr_class: QuestionClass::CH,
             rr_type: QuestionType::A,
             ttl: 483943,

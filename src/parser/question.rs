@@ -54,8 +54,8 @@ impl DNSQuestion {
             }
 
             let name_res: Result<FQDN, ResponseCode> = FQDN::try_from(qname);
-            let qtype_opt: Option<QuestionType> = QuestionType::from_u16(16);
-            let qclass_opt: Option<QuestionClass> = QuestionClass::from_u16(16);
+            let qtype_opt: Option<QuestionType> = QuestionType::from_u16(reader.read_u16(16).unwrap());
+            let qclass_opt: Option<QuestionClass> = QuestionClass::from_u16(reader.read_u16(16).unwrap());
 
             if name_res.is_err() || qtype_opt.is_none() || qclass_opt.is_none() {
                 return Result::Err::<Vec<Self>, ResponseCode>(
