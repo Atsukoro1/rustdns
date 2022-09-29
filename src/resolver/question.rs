@@ -83,34 +83,33 @@ impl QuestionHandlerT for QuestionHandler {
     async fn handle(&mut self, inp: DNSQuestion) -> Result<DNSResourceFormat, ResponseCode> {
         self.question = Some(inp);
 
-        // let valid = Self::check_fqdn_validity(
-        //     &self.question
-        //         .as_ref()
-        //         .unwrap()
-        //         .name
-        // );
-
-        // if !valid {
-        //     return Err(
-        //         ResponseCode::NameError
-        //     )
-        // }
+        // Rewrite this in FQDN struct later
         
-        // let exists: bool = Self::check_if_exists(
-        //     &self.question.as_ref()
-        //         .unwrap()
-        //         .name
-        //         .split(".")
-        //         .last()
-        //         .unwrap()
-        //         .to_string()
-        // ).await;
+        let valid = Self::check_fqdn_validity(
+            &self.question.as_ref() 
+                .unwrap()
+                .name
+                .to_string()
+        );
 
-        // if !exists {
-        //     return Err(
-        //         ResponseCode::NameError
-        //     );
-        // }
+        if !valid {
+            return Err(
+                ResponseCode::NameError
+            )
+        }
+        
+        let exists: bool = Self::check_if_exists(
+            &&self.question.as_ref()
+                .unwrap()
+                .name
+                .tld
+        ).await;
+
+        if !exists {
+            return Err(
+                ResponseCode::NameError
+            );
+        }
 
         match Self::query_rootserver(&mut self).await {
             Ok(..) => {
@@ -177,14 +176,19 @@ impl QuestionHandlerT for QuestionHandler {
         /*
             Create transport that will handle the whole TCP/UDP mess situation
         */
-        let pkt = transport::onetime_transport(
+        let _pkt: DNS = match transport::onetime_transport(
             &root_s_datagram.bytes().unwrap(), 
             format!("{}:{}", hostname, 53).parse::<SocketAddr>()
                 .unwrap(),
             None
-        ).await.expect("Bruh");
-
-        println!("{:?}", pkt);
+        ).await {
+            Ok(packet) => packet,
+            Err(..) => {
+                return Result::Err(
+                    ResponseCode::ServerFailure
+                );
+            }
+        };
 
         todo!();
     }

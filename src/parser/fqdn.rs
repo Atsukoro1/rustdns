@@ -16,6 +16,23 @@ impl FQDN {
         }
     }
 
+    pub fn to_string(&self) -> String {
+        if self.subdomain.is_none() {
+            return String::from(format!(
+                "{}.{}",
+                self.domain_name,
+                self.tld
+            ))
+        } else {
+            return String::from(format!(
+                "{}.{}.{}",
+                self.subdomain.as_ref().unwrap(),
+                self.domain_name,
+                self.tld
+            ))
+        }
+    }
+
     pub fn len(&self) -> usize {
         if self.subdomain.is_none() {
             return self.domain_name.len() +
