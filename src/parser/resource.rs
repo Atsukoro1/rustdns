@@ -16,7 +16,7 @@ pub struct DNSResourceFormat {
 }
 
 impl DNSResourceFormat {
-    pub fn from(_reader: &mut BitReader, _bytes: &[u8]) -> Result<Self, ResponseCode> {
+    pub fn from(reader: &mut BitReader, bytes: &[u8]) -> Result<Self, ResponseCode> {
         Ok(DNSResourceFormat {
             name: String::from("fd"),
             rr_class: QuestionClass::CH,

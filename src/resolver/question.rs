@@ -175,7 +175,7 @@ impl QuestionHandlerT for QuestionHandler {
         /*
             Create transport that will handle the whole TCP/UDP mess situation
         */
-        let _pkt: DNS = match transport::onetime_transport(
+        let pkt: DNS = match transport::onetime_transport(
             &root_s_datagram.bytes().unwrap(), 
             format!("{}:{}", hostname, 53).parse::<SocketAddr>()
                 .unwrap(),
@@ -188,6 +188,8 @@ impl QuestionHandlerT for QuestionHandler {
                 );
             }
         };
+
+        println!("{:?}", pkt);
 
         todo!();
     }
