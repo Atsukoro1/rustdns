@@ -1,5 +1,4 @@
 use bitreader::BitReader;
-
 use super::{
     qclass::QuestionClass,
     qtype::QuestionType, 
@@ -13,18 +12,18 @@ pub struct DNSResourceFormat {
     pub rr_class: QuestionClass,
     pub ttl: u32,
     pub length: u16,
-    pub data: String,
+    pub data: Vec<String>,
 }
 
 impl DNSResourceFormat {
-    pub fn from(reader: &mut BitReader, bytes: &[u8]) -> Result<Self, ResponseCode> {
+    pub fn from(_reader: &mut BitReader, _bytes: &[u8]) -> Result<Self, ResponseCode> {
         Ok(DNSResourceFormat {
-            name: String::from("test"),
+            name: String::from("fd"),
             rr_class: QuestionClass::CH,
             rr_type: QuestionType::A,
             ttl: 483943,
             length: 32,
-            data: String::from("fdlh")
+            data: vec![String::from("fdlh")]
         })
     }
 }

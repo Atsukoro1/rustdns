@@ -1,4 +1,4 @@
-use std::{net::{SocketAddr, UdpSocket, IpAddr, Ipv4Addr}, str::FromStr};
+use std::{net::{SocketAddr}, str::FromStr};
 use redis::Commands;
 use fancy_regex::Regex;
 use crate::{parser::{
@@ -6,9 +6,8 @@ use crate::{parser::{
     rcode::ResponseCode, 
     resource::DNSResourceFormat, dns::DNS, r#type::Type, opcode::OpCode, qtype::QuestionType, qclass::QuestionClass
 }, CACHEMANAGER, 
-    cache::modules::rootserver::RootServer, CONFIG
+    cache::modules::rootserver::RootServer,
 };
-use tokio::{net::TcpStream, io::{AsyncWriteExt, AsyncReadExt}};
 use super::transport;
 
 pub struct QuestionHandler {
